@@ -10,7 +10,7 @@ Recorrido: solo el punto → cartel ilegible a cinco pasos → el acorde de calm
 
 | Versión | Qué probó | Qué aprendimos |
 | --- | --- | --- |
-| Prototipo 3 | Sonidos con significado, puentes, escalar, tránsito, poderes, carteles | El libro era demasiado fácil; las figuras se adivinaban probando; volver al laberinto sin llave encerraba al jugador; una tabla mal puesta no tenía arreglo; faltaba un cierre explícito |
+| Prototipo 3 | Sonidos con significado, puentes, escalar, tránsito, poderes, carteles | El libro era demasiado fácil; las figuras se adivinaban probando; volver al laberinto sin llave encerraba al jugador; una tabla mal puesta no tenía arreglo; faltaba un cierre explícito; estirar la ciudad no la agrandaba: hacían falta más calles, no calles más anchas |
 | Prototipo 2 | Ciudad como mapa base y laberinto anexo; puertas con requisitos | La pista parecía algo para pisar; el portal no decía qué pedía |
 | Prototipo 1 | Punto, oscuridad, visión que crece, pedestales, sombras | Visión demasiado amplia; faltaban puertas con requisitos visibles |
 

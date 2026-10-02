@@ -51,6 +51,7 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
   ok(await ev(() => __t.stats.trapped) === 2, 'los dos cazadores quedan encerrados');
   await p.waitForTimeout(400); await tp(2, 1); await go('L'); await p.waitForTimeout(1300);
   ok(await ev(() => __t.cur.name) !== 'laberinto', 'se puede salir del laberinto');
+  ok(await ev(([x, y]) => __t.P.x === x && __t.P.y === y, [gx, gy + 1]), 'al salir se aparece junto a la grieta');
 
   console.log('Final');
   await ev(() => { __t.city.doors.forEach(d => { if (d.kind === 'reja' || d.kind === 'vitrina') d.open = true }) });

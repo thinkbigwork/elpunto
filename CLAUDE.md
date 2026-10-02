@@ -17,6 +17,7 @@ Juego de descubrimiento y estrategia online. Empieza como un punto blanco en una
 | `libro/CAMBIOS.md` | Registro de cambios: una entrada por paso, la más nueva arriba |
 | `libro-web/` | La página web del libro, que lee sus datos de una base de datos (ver abajo) |
 | `herramientas/solvers.js` | Solucionadores para validar cuartos: `sokoban(filas)` y `ice(filas)` |
+| `herramientas/validar-ciudad.js` | BFS por etapas sobre la ciudad del juego (`npm run validar:ciudad`) |
 | `herramientas/libro-a-web.js` | Convierte `libro/` en los JSON de la versión web |
 | `pruebas/regresion.js` | Prueba de punta a punta con Playwright (`npm test`) |
 
@@ -35,7 +36,8 @@ Si la persona lo pide, actualizar también la versión web del libro (ver "Libro
 ## Cómo está hecho el juego
 
 - **La lógica vive en una grilla y el dibujo es una capa aparte.** Cada mundo es un arreglo de filas de texto; cada carácter es un tipo de casilla, objeto o puerta (ver el `switch` del constructor de mundos).
-- Mundos actuales: **ciudad** (mapa base, 61 × 48), **laberinto** (23 × 17) y **cajas** (35 × 9, tres cuartos: empujar cajas, memoria de pares y hielo).
+- Mundos actuales: **ciudad** (mapa base, 61 × 48, calles de 1 casilla), **laberinto** (23 × 17) y **cajas** (35 × 9, tres cuartos: empujar cajas, memoria de pares y hielo).
+- **Escala de la ciudad:** calles de 1 casilla y manzanas compactas, como `referencias/ciudad-original-41x32.txt`. Para agrandarla se suman calles, manzanas y barrios; nunca se estira.
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
 - Cazadores: buscan camino con BFS; quedan encerrados si no hay camino hasta el jugador.
 - Visión: radio base 1, cada chispa suma 0,5 (5 chispas → 3,5). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
@@ -43,7 +45,7 @@ Si la persona lo pide, actualizar también la versión web del libro (ver "Libro
 
 ## Validar antes de dar algo por terminado
 
-- **Mapas:** después de tocar un mapa, comprobar con BFS que cada tramo de la progresión se puede alcanzar con lo que el jugador tiene en ese momento (lectura, tablas, escalar, sombrero, casa). Nunca debe quedar un objeto necesario detrás de lo que ese mismo objeto abre.
+- **Mapas:** después de tocar un mapa, comprobar con BFS (para la ciudad, `npm run validar:ciudad`; si cambia la progresión, actualizar sus etapas) que cada tramo de la progresión se puede alcanzar con lo que el jugador tiene en ese momento (lectura, tablas, escalar, sombrero, casa). Nunca debe quedar un objeto necesario detrás de lo que ese mismo objeto abre.
 - **Cuartos de cajas o hielo:** pasarlos por `herramientas/solvers.js`. Un cuarto de cajas debe tener solución y no debe dejar al jugador encerrado sin la baldosa de reinicio; uno de hielo, ningún punto sin vuelta.
 - **Juego:** `npm test` debe terminar en "Todo bien." Si se cambia algo que la prueba recorre (coordenadas del bloque, la grieta, la meta), actualizar la prueba.
 - La prueba engancha `window.__t` en una **copia** del juego (`pruebas/.tmp/`). Nunca agregar ese gancho a `juego/el-punto.html`.
@@ -62,8 +64,6 @@ La página `libro-web/el-punto-gdd.html` lee de la base de datos de su artefacto
 2. Subir a la base de datos solo los documentos que cambiaron, leyendo antes su versión y escribiendo con `if_version`.
 
 ## Pendientes conocidos
-
-- **Rehacer la ampliación de la ciudad.** La versión 11 la agrandó un 50 % estirándola: quedaron calles y espacios más anchos, y eso no es lo buscado. Hay que volver a la escala de `referencias/ciudad-original-41x32.txt` (calles de 1 casilla, manzanas compactas) y agrandar la ciudad sumando calles, manzanas y barrios nuevos, para que el mapa sea más extenso y explorar cueste más al principio.
 
 - Diseñador de mapas: falta definir si es solo para el equipo o también para los jugadores.
 - Lupa, brújula y mapa quedan para próximos capítulos.

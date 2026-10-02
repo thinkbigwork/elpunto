@@ -4,6 +4,7 @@
   "description": "El Punto: juego de descubrimiento y estrategia online",
   "scripts": {
     "test": "node pruebas/regresion.js",
+    "validar:ciudad": "node herramientas/validar-ciudad.js",
     "libro:web": "node herramientas/libro-a-web.js libro libro-web/datos"
   },
   "devDependencies": {

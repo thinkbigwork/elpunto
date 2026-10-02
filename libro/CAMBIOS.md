@@ -1,6 +1,17 @@
 # Registro de cambios
 
-Versión actual del libro: **0.16** (2026-10-02).
+Versión actual del libro: **0.17** (2026-10-02).
+
+## 0.17 · La ciudad vuelve a su escala y suma barrios
+
+_2026-10-02_
+
+- La ciudad sigue midiendo 61 × 48, pero vuelve a la escala del primer mapa: calles de 1 casilla y manzanas compactas. Pasa de 16 a 61 manzanas.
+- El núcleo original de 41 × 32 queda intacto (meseta, río, avenida, casa, patio, plaza oscura y refugio). Se suman barrios: una franja entre la meseta y el río, todo el este con una plazoleta, y una fila de manzanas entre la avenida y la casa.
+- La avenida vuelve a tener 4 filas. Una chispa se muda al barrio nuevo del sudeste y una tabla al extremo este. Las baldosas de zapatillas quedan dentro de la plaza oscura.
+- Nueva herramienta: un BFS por etapas valida la progresión de la ciudad, los carteles y los puntos de regreso de los anexos.
+
+Páginas: [mapa-global](mundo/mapa-global.md), [objetos](contenido/objetos.md), [prototipos](niveles/prototipos.md), [arquitectura](tecnica/arquitectura.md), [decisiones](produccion/decisiones.md)
 
 ## 0.16 · El proyecto pasa a Claude Code
 

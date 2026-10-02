@@ -16,6 +16,7 @@ Todo el diseño está en [`libro/`](libro/README.md): empezá por el [índice](l
 npm install
 npx playwright install chromium
 npm test
+npm run validar:ciudad
 ```
 
 ## Trabajar con Claude Code
