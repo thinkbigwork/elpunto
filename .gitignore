@@ -1,0 +1,4 @@
+node_modules/
+pruebas/.tmp/
+libro-web/datos/
+.DS_Store

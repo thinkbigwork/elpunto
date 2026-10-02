@@ -1,0 +1,12 @@
+{
+  "name": "el-punto",
+  "private": true,
+  "description": "El Punto: juego de descubrimiento y estrategia online",
+  "scripts": {
+    "test": "node pruebas/regresion.js",
+    "libro:web": "node herramientas/libro-a-web.js libro libro-web/datos"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

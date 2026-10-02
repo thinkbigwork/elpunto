@@ -1,0 +1,1336 @@
+<title>El Punto</title>
+<!-- El punto no está solo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&display=swap">
+<style>
+/* Un solo mundo visual, deliberadamente oscuro: vacío negro y luz blanca cálida. */
+:root {
+  --vacio: #000000;
+  --luz: #f2f1ec;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; background: var(--vacio); color: var(--luz); overflow: hidden; }
+canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
+</style>
+<canvas id="c" tabindex="0" aria-label="Oscuridad. Un punto blanco."></canvas>
+<script>
+(() => {
+  // ═════════════════════════ Mundos ═════════════════════════
+  // #  muro           .  calle          ,  interior        ~  agua
+  // b  puente roto    =  puente         ^  borde escalable %  pared falsa
+  // R  refugio        !  "no es por aquí"                  T  cartel
+  // c chispa · p tabla · f fragmento · k llave · l libro · z zapatillas · e escudo · h sombrero
+  // H puerta de casa · E reja · X grieta · 1 2 3 pedestales · M meta · A portal · K pista · S inicio
+  const CIUDAD = [
+    "#############################################################",
+    "#!###############...........................................#",
+    "#.###############...........................................#",
+    "#!#####X#########.#############..###^^^^^^^^^^^^^^^^^^^^^#..#",
+    "#!#####..########.#,,,,,,,,,,##..###^^,,,,,,,,m,,,,,,,,^^#..#",
+    "#.#####..########.#,,,,,,,,,,##..###^^,,,,,,,,,,,,,,,,,^^#..#",
+    "#.#####..########.%,,,,c,,,,,##..###^^,T,,,,,,,,,,,,,,,^^#..#",
+    "#.#####..########.#,,,,,,,T,,##..###^^,,,,,,,,,,,,,,V,,^^#..#",
+    "#.%..Q#..########.#,,,,,,,,,,##..###^^,,,n,,n,,n,,,n,,,^^#..#",
+    "#.#####..########.#############..###^^^^^^^^^^^^^^^^^^^^^#..#",
+    "#.#####..########.#############..###^^^^^^^^^^^^^^^^^^^^^#..#",
+    "#.................................T.........................#",
+    "#...........................................................#",
+    "#~~~~~~~~~~~~~~~~~~~~~~b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+    "#~~~~~~~~~~~~~~~~~~~~~~b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#",
+    "#~~~~~~~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~~~~~~........~~~~~~~~#",
+    "#.....................T.....................................#",
+    "#.###########..#############.###############e.############..#",
+    "#.###########..#############.###############..############..#",
+    "#p###########..#############.###############..############p.#",
+    "#.###########..#############.###############..############..#",
+    "#.###########..#############.###############..############..#",
+    "#.###########..#############.###############..############..#",
+    "#...................................p.......................#",
+    "#...........................................................#",
+    "#q###########c.#############.###############..############..#",
+    "#.###########..#############.###############..############..#",
+    "#.###########..#############.###############..############..#",
+    "#.###########..#############.###############..############..#",
+    "#...........................................................#",
+    "#...........................................................#",
+    "#...........................................................#",
+    "#...........................................................#",
+    "#..........T................................................#",
+    "#...........................................................#",
+    "#.####H###########.#########.#########.RRRRRRRRRRRRRRRRRRR..#",
+    "#.#,,,,,,2,#,,,,,#o#,,,,,,##...........RRRRRTR###L###RRRRR..#",
+    "#.#1,,,,,,,#,,,,,#.#,,,,,,##...........RRRRRRR#,,,,,#RRRRRcR#",
+    "#.#,,,,,,,,E,M,,,#.~,,,a,,##.....O.....RRRRCRR#,,l,,#RRRRR..#",
+    "#.#,,,,,,,,#,,,,,#c#,,,,,,##>..........RRRRRRR#,,,,,#RRRRR..#",
+    "#.#,,,,,,,,#,,,,,#.#,,,,,,##...........RRRRRRR#,,,,,#RRRRR..#",
+    "#.#3,,,,,4,#,,,,,#.#,,,,,,##<..........RRRRRRR#######RRRRR..#",
+    "#.#,,,,,,,,#,,,,,#.#,,,,,,##...........RRRRRRR#######RRRRR..#",
+    "#.################.#########.#########pRRRRRRRRRRRRRRRRRRR..#",
+    "#.################.#########.#########RRRRRRRRRRRRRRRRRRRR..#",
+    "#S.......T..................................................#",
+    "#...........................................................#",
+    "#############################################################"
+  ];
+  const LABERINTO = [
+    "#######################",
+    "#A.T..#.......#.......#",
+    "#####.#.#####.#.#####.#",
+    "#.....#.#...#...#...#.#",
+    "#.#####.#.#.#####.#.#.#",
+    "#.#.....#.#.......#...#",
+    "#.#.#####.#########.###",
+    "#.#.#...#.........#...#",
+    "#.#.#.#.#########.###.#",
+    "#...#.#.......#RR..T..#",
+    "#####.#######.#.####$##",
+    "#.....#.....#.........#",
+    "#.#####.###.#.##.####.#",
+    "#.#c....#...#.......#.#",
+    "#.#######.#########.#.#",
+    "#K..........#......k#.#",
+    "#######################"
+  ];
+  const CAJAS = [
+    "###################################",
+    "###########.j.j.j.j.#riiiiirii#####",
+    "###...#...#.........#iiriiiiii#####",
+    "###...$.#.#.j.j.j.j.#riiiiriir#T..#",
+    "#ZS..$.$..x.........P.iiriiiiix.fQ#",
+    "###..$.#..#.j.j.j.j.#iiiiiiiir#...#",
+    "###.#$.#..#.........#iiiiriiii#####",
+    "###########.j.j.j.j.#ririiriii#####",
+    "###################################"
+  ];
+  const CARTELES = {
+    ciudad: {
+      "9,45": "Lo que se ve no es todo lo que hay.",
+      "11,33": "Mirá a los dos lados.",
+      "44,36": "Acá nada te alcanza. Volvé cuando lo necesites.",
+      "22,16": "Lo roto también se arregla.",
+      "34,11": "Algunas paredes se suben. Hay que insistir.",
+      "26,7": "Ahora ves lo que otros no ven.",
+      "39,6": "Escuchá antes de pisar."
+    },
+    cajas: {
+      "31,3": "Acá todo se ve. Lo difícil era otra cosa."
+    },
+    laberinto: {
+      "3,1": "Lo que abre está donde nadie quiere ir.",
+      "19,9": "Lo que encierra también protege."
+    }
+  };
+  const ITEM_CH = { c: "chispa", p: "tabla", f: "fragmento", k: "llave", l: "libro", z: "zapatillas", e: "escudo", h: "sombrero", q: "barreta", o: "lente", a: "armazon" };
+  const POWERS = ["libro", "zapatillas", "escudo", "sombrero", "barreta"];
+
+  const parse = (name, rows) => {
+    const w = { name, W: rows[0].length, H: rows.length, grid: rows.map(r => r.split("")), items: [], doors: new Map(), peds: [], clues: [], enemies: [], lanes: [], signs: [], alarm: [], calm: [], notes: [], boxes: [], cards: [] };
+    for (let y = 0; y < w.H; y++) for (let x = 0; x < w.W; x++) {
+      const ch = w.grid[y][x], key = x + "," + y;
+      const door = (kind, need, consume) => w.doors.set(key, { x, y, kind, need, consume, open: false, openAt: -1e9, shakeAt: -1e9 });
+      if (ITEM_CH[ch]) { w.items.push({ x, y, kind: ITEM_CH[ch] }); w.grid[y][x] = "."; continue; }
+      switch (ch) {
+        case "S": w.start = { x, y }; w.grid[y][x] = name === "cajas" ? "x" : "."; break;
+        case "O": w.items.push({ x, y, kind: "lente", hidden: true }); w.grid[y][x] = "."; break;
+        case "C": w.crisol = { x, y }; break;
+        case "V": door("vitrina", "melodia", false); w.items.push({ x, y, kind: "sombrero" }); break;
+        case "m": w.musicbox = { x, y, playedAt: -1e9 }; break;
+        case "n": w.notes.push({ x, y, at: -1e9 }); break;
+        case "Q": w.qportal = { x, y }; break;
+        case "$": w.boxes.push({ x, y, x0: x, y0: y }); w.grid[y][x] = "."; break;
+        case "j": w.cards.push({ x, y, state: "down" }); break;
+        case "Z": w.reset = { x, y }; break;
+        case "P": door("reja", "pares", false); break;
+        case "H": door("casa", "llave", true); break;
+        case "L": door("casa", "anteojos", true); break;
+        case "E": door("reja", "orden", false); break;
+        case "X": door("grieta", "fragmento", true); break;
+        case "1": case "2": case "3": case "4": w.peds.push({ x, y, lit: false }); w.grid[y][x] = ","; break;
+        case "M": w.goal = { x, y }; w.grid[y][x] = ","; break;
+        case "A": w.portal = { x, y, shakeAt: -1e9 }; w.grid[y][x] = "."; break;
+        case "K": w.clueAnchor = { x, y }; w.grid[y][x] = "."; break;
+        case "T": w.signs.push({ x, y, text: CARTELES[name][key] || "", seenAt: -1, near: 0 }); break;
+        case "!": w.alarm.push({ x, y }); break;
+        case "R": w.calm.push({ x, y }); break;
+      }
+    }
+    w.seen = new Float64Array(w.W * w.H).fill(-1e9);
+    return w;
+  };
+  const city = parse("ciudad", CIUDAD);
+  const lab = parse("laberinto", LABERINTO);
+  const cajas = parse("cajas", CAJAS);
+  cajas.lit = true;
+  lab.enemies.push({ x: 13, y: 13, min: 13, max: 19, d: 1 }, { x: 21, y: 11, min: 15, max: 21, d: -1 });
+  city.lanes.push(
+    { y: 31, dir: 1, speed: 3.4, len: 2, cars: [2, 10, 18, 26, 34, 42, 50] },
+    { y: 32, dir: -1, speed: 4.4, len: 3, cars: [5, 17, 29, 41, 53] }
+  );
+  // callejones sin salida del laberinto: suenan a "no es por aquí"
+  {
+    const special = new Set([...lab.items.map(i => i.x + "," + i.y), lab.portal.x + "," + lab.portal.y, lab.clueAnchor.x + "," + lab.clueAnchor.y, ...lab.signs.map(s => s.x + "," + s.y)]);
+    for (let y = 1; y < lab.H - 1; y++) for (let x = 1; x < lab.W - 1; x++) {
+      if (lab.grid[y][x] === "#" || special.has(x + "," + y)) continue;
+      const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([a, b]) => lab.grid[y + b][x + a] !== "#").length;
+      if (n === 1) lab.alarm.push({ x, y });
+    }
+  }
+  const CITY_RETURN = { x: 7, y: 4 }, CAJAS_RETURN = { x: 3, y: 8 };
+
+  // ═════════════════ Semilla propia de cada jugador ═════════════════
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+  // una semilla nueva en cada partida: cambia el orden de las figuras, la melodía y las cartas
+  const seed = ((Math.random() * 2147483647) | 0) || 7;
+  const rng = (a => () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; })(seed);
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const SHAPES = ["circulo", "cuadrado", "triangulo", "rombo"];
+  city.peds.sort((a, b) => a.x - b.x);
+  shuffle(SHAPES.slice()).forEach((s, i) => { city.peds[i].shape = s; });
+  const order = shuffle(SHAPES.slice());
+  const slots = shuffle([0, 1, 2, 3]);
+  lab.clues = [0, 1, 2, 3].map(j => ({ x: lab.clueAnchor.x + j, y: lab.clueAnchor.y, shape: order[slots[j]], n: slots[j] + 1 }));
+  // la melodía del sombrero: 5 notas sobre 4 baldosas, nunca la misma dos veces seguidas
+  const PITCH = [392, 494, 587, 784];
+  city.notes.sort((a, b) => a.x - b.x).forEach((n, i) => { n.i = i; });
+  const melody = []; while (melody.length < 5) { const k = Math.floor(rng() * 4); if (k !== melody.at(-1)) melody.push(k); }
+  // las cartas de memoria
+  const SYMBOLS = ["circulo", "cuadrado", "triangulo", "rombo", "cruz", "estrella", "luna", "onda"];
+  shuffle([...SYMBOLS, ...SYMBOLS]).forEach((sym, i) => { cajas.cards[i].sym = sym; });
+
+  // ═════════════════════════ Estado ═════════════════════════
+  const LIFT_MS = 1600, BASE_R = 1, SPARK_R = 0.5, ENEMY_MS = 260, MEM_MS = 3500, MEM_A = 0.22, CLIMB_MS = 750;
+  let cur = city;
+  const P = { x: city.start.x, y: city.start.y };
+  const dp = { x: P.x, y: P.y };
+  const inv = { fragmento: 0, llave: 0, lente: 0, armazon: 0, anteojos: 0, tabla: 0 };
+  const powers = new Set();
+  let stats = { trapped: 0, hits: 0, built: 0, crafted: 0, cajas1: false, hielo: false, escaped: false }, labAwake = false, labCalm = false, hunters = [], hunterClock = 0, shakeUntil = 0, chaseStep = 0, nextChase = 0;
+  let shield = 0, stuck = false, zoomE = 0, climb = null, lift = null, slide = null, mseq = [], mCool = 0, flipped = [], hideAt = 0, stuckSince = 0, crafts = [], endGoneAt = 0, prev = { x: 0, y: 0 }, labOpen = false, seq = [], coolUntil = 0, startAt = 0, wonAt = 0, endShown = false;
+  let awake = false, R = 0, targetR = 0, progress = 0, lastMove = 0, lastBump = 0, lastDeny = 0, invulnUntil = 0;
+  let sparkFx = null, flash = 0, revealUntil = 0, dimUntil = 0, won = false, endGone = false, trans = null, visitedLab = false, readAt = -1;
+  let badge = store("punto.insignia") === "1";
+  const pickups = [], ghosts = [], builds = [];
+  let enemyClock = 0;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const moveMs = () => powers.has("zapatillas") ? 82 : 120;
+  const has = k => inv[k] > 0;
+
+  // ═════════════════════════ Sonido ═════════════════════════
+  let ac = null, layers = null;
+  const audio = () => {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (ac && ac.state === "suspended") ac.resume();
+  };
+  const tone = (f, dur, o = {}) => {
+    if (!ac) return;
+    const t0 = ac.currentTime + (o.delay || 0);
+    const osc = ac.createOscillator(), g = ac.createGain();
+    osc.type = o.type || "sine";
+    osc.frequency.setValueAtTime(f, t0);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(o.vol || 0.06, t0 + (o.attack || 0.012));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g).connect(ac.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+  };
+  const noiseBurst = (dur, freq, vol, delay = 0) => {
+    if (!layers) return;
+    const t0 = ac.currentTime + delay;
+    const src = ac.createBufferSource(); src.buffer = layers.noise;
+    const f = ac.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = 1.2;
+    const g = ac.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f).connect(g).connect(ac.destination); src.start(t0, Math.random()); src.stop(t0 + dur + 0.05);
+  };
+  const DRONES = { ciudad: [55, 82.4], laberinto: [58.3, 61.9], cajas: [98, 98.4] };
+  const startLayers = () => {
+    if (!ac || layers) return;
+    const len = ac.sampleRate * 2, noise = ac.createBuffer(1, len, ac.sampleRate), d = noise.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const gain = v => { const g = ac.createGain(); g.gain.value = v; g.connect(ac.destination); return g; };
+    const loop = () => { const s = ac.createBufferSource(); s.buffer = noise; s.loop = true; s.start(); return s; };
+    // fondo de cada mundo
+    const drone = gain(0.0001), dO = [0, 1].map(i => { const o = ac.createOscillator(); o.frequency.value = DRONES[cur.name][i]; o.connect(drone); o.start(); return o; });
+    drone.gain.exponentialRampToValueAtTime(0.018, ac.currentTime + 4);
+    // "algo está roto": chisporroteo
+    const roto = gain(0); { const f = ac.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 2600; f.Q.value = 2.5; loop().connect(f).connect(roto); }
+    // tránsito: motor grave
+    const motor = gain(0); { const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 380; loop().connect(f).connect(motor); }
+    // "calma": refugio
+    const calma = gain(0); [261.6, 329.6, 392, 523.3].forEach((fq, i) => { const o = ac.createOscillator(); o.frequency.value = fq; o.detune.value = (i - 1.5) * 4; const g = ac.createGain(); g.gain.value = i === 3 ? 0.4 : 1; o.connect(g).connect(calma); o.start(); });
+    layers = { noise, drone, dO, roto, motor, calma, nextAlarm: 0, alarmHi: false, nextBeat: 0, nextCall: 0 };
+  };
+  const setDrone = name => {
+    if (!layers) return;
+    const t = ac.currentTime;
+    layers.dO.forEach((o, i) => { o.frequency.setValueAtTime(o.frequency.value, t); o.frequency.linearRampToValueAtTime(DRONES[name][i], t + 1.5); });
+  };
+  const sfx = {
+    wake: () => { tone(110, 1.8, { to: 220, vol: 0.05 }); tone(165, 1.8, { to: 330, vol: 0.03, delay: 0.2 }); },
+    step: () => tone(1200, 0.025, { type: "triangle", vol: 0.008 }),
+    bump: () => tone(70, 0.09, { type: "square", vol: 0.03 }),
+    deny: () => { tone(92, 0.18, { type: "square", vol: 0.05 }); tone(138, 0.14, { type: "square", vol: 0.03, delay: 0.09 }); },
+    splash: () => { noiseBurst(0.35, 900, 0.12); tone(420, 0.25, { to: 140, vol: 0.02 }); },
+    build: () => [0, 0.13, 0.26].forEach(d => { tone(190, 0.07, { type: "square", vol: 0.05, delay: d }); noiseBurst(0.05, 1800, 0.08, d); }),
+    scratch: () => noiseBurst(0.06, 3200 + Math.random() * 1200, 0.05),
+    climbed: () => { tone(330, 0.2, { to: 660, vol: 0.04 }); },
+    grow: () => { tone(130, 1.5, { to: 262, vol: 0.05 }); tone(196, 1.5, { to: 392, vol: 0.03, delay: 0.12 }); },
+    spark: () => [1, 1.25, 1.5, 2].forEach((m, i) => tone(392 * m, 0.5, { vol: 0.04, delay: i * 0.07 })),
+    pickup: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.9, { vol: 0.045, delay: i * 0.06, type: "triangle" })),
+    power: () => { [392, 494, 587, 784].forEach((f, i) => tone(f, 1.4, { vol: 0.04, delay: i * 0.09 })); tone(98, 1.6, { vol: 0.04 }); },
+    open: () => { tone(80, 0.5, { type: "sawtooth", to: 160, vol: 0.03 }); [196, 247, 294, 392].forEach((f, i) => tone(f, 2, { vol: 0.04, delay: 0.25 + i * 0.1 })); },
+    ped: k => tone([392, 494, 587][k], 0.6, { vol: 0.06 }),
+    wrong: () => tone(98, 0.5, { type: "sawtooth", to: 60, vol: 0.035 }),
+    portal: () => { tone(160, 1.1, { to: 900, vol: 0.05 }); tone(240, 1.1, { to: 1350, vol: 0.03, delay: 0.05 }); },
+    seal: () => { tone(700, 1.2, { to: 70, vol: 0.05, type: "triangle" }); tone(66, 1.4, { type: "sawtooth", vol: 0.03, delay: 0.8 }); },
+    hit: () => { tone(55, 0.4, { type: "sawtooth", vol: 0.06, to: 30 }); tone(3000, 0.08, { type: "square", vol: 0.02 }); },
+    shieldBreak: () => { tone(1800, 0.3, { to: 300, type: "triangle", vol: 0.05 }); noiseBurst(0.2, 4000, 0.08); },
+    shieldBack: () => tone(880, 0.8, { to: 1320, vol: 0.035 }),
+    lift: () => { [0, 0.1, 0.2].forEach(d => tone(220 - d * 300, 0.08, { type: "square", vol: 0.04, delay: d })); tone(300, 0.5, { to: 600, vol: 0.03, delay: 0.25 }); },
+    note: i => tone(PITCH[i], 0.55, { type: "triangle", vol: 0.07 }),
+    melody: () => melody.forEach((k, j) => tone(PITCH[k], 0.5, { type: "triangle", vol: 0.06, delay: 0.3 + j * 0.5 })),
+    push: () => { noiseBurst(0.14, 420, 0.14); tone(85, 0.1, { type: "square", vol: 0.03 }); },
+    slide: () => noiseBurst(0.18, 5200, 0.035),
+    flip: k => tone(330 * Math.pow(2, k / 8), 0.35, { type: "triangle", vol: 0.05 }),
+    match: () => [659, 880, 1175].forEach((f, i) => tone(f, 0.6, { vol: 0.04, delay: i * 0.08, type: "triangle" })),
+    craft: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, 1.2, { vol: 0.045, delay: i * 0.1 })); noiseBurst(0.3, 6000, 0.05); },
+    rewind: () => { tone(900, 0.6, { to: 180, vol: 0.05, type: "triangle" }); noiseBurst(0.5, 2500, 0.05); },
+    awaken: () => { tone(48, 1.8, { type: "sawtooth", to: 30, vol: 0.08 }); tone(36, 2.2, { type: "square", vol: 0.04, delay: 0.2 }); noiseBurst(1.2, 220, 0.2); },
+    fast: () => { tone(300, 0.35, { to: 900, vol: 0.05 }); noiseBurst(0.25, 3000, 0.06); },
+    slow: () => tone(700, 0.4, { to: 220, vol: 0.05 }),
+    trapped: () => { [0, 0.12].forEach(d => tone(140, 0.12, { type: "square", vol: 0.06, delay: d })); tone(880, 0.9, { to: 440, vol: 0.04, delay: 0.3, type: "triangle" }); },
+    win: () => [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 2.6 - i * 0.2, { vol: 0.045, delay: i * 0.16 }))
+  };
+
+  // ═════════════════════════ Reglas ═════════════════════════
+  const doorAt = (w, x, y) => w.doors.get(x + "," + y);
+  const inside = (w, x, y) => x >= 0 && y >= 0 && x < w.W && y < w.H;
+  const wake = now => {
+    if (awake) return;
+    awake = true; targetR = BASE_R; lastMove = now; startAt = now; audio(); sfx.wake(); startLayers();
+  };
+  const deny = (x, y, need, now, shakeObj) => {
+    if (shakeObj) shakeObj.shakeAt = now;
+    if (need) { const g = ghosts.find(g => g.w === cur && g.x === x && g.y === y); if (g) g.at = now; else ghosts.push({ w: cur, x, y, need, at: now }); }
+    if (now - lastDeny > 350) { sfx.deny(); lastDeny = now; }
+  };
+  const bump = now => { if (now - lastBump > 280) { sfx.bump(); lastBump = now; } };
+  const boxAt = (w, x, y) => w.boxes.find(b => b.x === x && b.y === y);
+  const canPass = (w, x, y) => {
+    if (!inside(w, x, y)) return false;
+    const c = w.grid[y][x], d = doorAt(w, x, y);
+    return !"#r~b^%".includes(c) && !boxAt(w, x, y) && !(d && !d.open);
+  };
+  const resetRoom = now => {
+    cajas.boxes.forEach(b => { b.x = b.x0; b.y = b.y0; });
+    P.x = cajas.start.x; P.y = cajas.start.y; stuck = false; stuckSince = 0; slide = null;
+    flash = 0.2; sfx.rewind();
+  };
+  // ¿quedó el punto encerrado por las cajas, sin poder volver a la baldosa de reinicio?
+  const checkStuck = () => {
+    if (cur !== cajas || P.x > 10) { stuck = false; return; }
+    const seenS = new Set([P.x + "," + P.y]), q = [[P.x, P.y]];
+    while (q.length) {
+      const [x, y] = q.shift();
+      if (x === cajas.reset.x && y === cajas.reset.y) { stuck = false; return; }
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + a, ny = y + b, k = nx + "," + ny;
+        if (nx > 10 || seenS.has(k) || !inside(cajas, nx, ny) || cajas.grid[ny][nx] === "#" || boxAt(cajas, nx, ny)) continue;
+        seenS.add(k); q.push([nx, ny]);
+      }
+    }
+    stuck = true;
+  };
+
+  const tryMove = (dx, dy, now, sliding) => {
+    lastMove = now;
+    if (won && now - wonAt > 9000 && !endGone) { endGone = true; endGoneAt = now; }
+    const nx = P.x + dx, ny = P.y + dy;
+    if (!inside(cur, nx, ny)) return bump(now);
+    const d = doorAt(cur, nx, ny);
+    if (d && !d.open) {
+      if (d.need !== "orden" && has(d.need)) {
+        d.open = true; d.openAt = now;
+        if (d.consume) inv[d.need]--;
+        sfx.open();
+      } else deny(nx, ny, d.need, now, d);
+      return;
+    }
+    const c = cur.grid[ny][nx];
+    if (c === "#" || c === "r") return sliding ? null : bump(now);
+    const box = boxAt(cur, nx, ny);
+    if (box) {
+      const tx = nx + dx, ty = ny + dy;
+      if (!inside(cur, tx, ty) || cur.grid[ty][tx] !== "." || boxAt(cur, tx, ty) || doorAt(cur, tx, ty) || (cur === lab && hunters.some(h => h.x === tx && h.y === ty))) return bump(now);
+      box.x = tx; box.y = ty; sfx.push();
+    }
+    if (c === "%" && !powers.has("sombrero")) return bump(now);
+    if (c === "~" || c === "b") {
+      if (has("tabla")) {
+        inv.tabla--; cur.grid[ny][nx] = "="; builds.push({ x: nx, y: ny, t: now }); sfx.build(); stats.built++;
+      } else if (c === "b") deny(nx, ny, "tabla", now);
+      else if (now - lastBump > 400) { sfx.splash(); lastBump = now; }
+      return;
+    }
+    if (c === "^" && cur.grid[P.y][P.x] !== "^") {
+      if (!climb || climb.x !== nx || climb.y !== ny) { climb = { x: nx, y: ny, start: now }; sfx.scratch(); return; }
+      if (now - climb.start < CLIMB_MS) { sfx.scratch(); return; }
+      climb = null; sfx.climbed();
+    }
+    climb = null;
+    prev = { x: P.x, y: P.y }; lift = null;
+    P.x = nx; P.y = ny; if (!sliding) sfx.step();
+    enter(now);
+    if (!trans && cur.grid[P.y][P.x] === "i" && canPass(cur, P.x + dx, P.y + dy)) { if (!sliding) sfx.slide(); slide = { dx, dy, next: now + 55 }; }
+    checkStuck();
+  };
+  const teleport = (to, pos, now) => { trans = { start: now, to, pos, switched: false }; climb = null; sfx.portal(); };
+  const hurt = (now, respawn) => {
+    if (now < invulnUntil || trans) return;
+    invulnUntil = now + 900;
+    if (shield > 0) { shield = 0; flash = 0.25; sfx.shieldBreak(); return; }
+    sfx.hit(); flash = 0.55; dimUntil = now + 1300; climb = null; stats.hits++;
+    P.x = respawn.x; P.y = respawn.y;
+  };
+  const enter = now => {
+    for (const it of cur.items) if (!it.taken && it.x === P.x && it.y === P.y) {
+      it.taken = true;
+      if (it.kind === "chispa") { targetR += SPARK_R; sparkFx = { t: now, to: targetR }; sfx.spark(); sfx.grow(); continue; }
+      if (it.kind === "llave" && cur === lab) { labOpen = true; if (!labCalm) awaken(now); }
+      if (POWERS.includes(it.kind)) {
+        powers.add(it.kind); sfx.power();
+        if (it.kind === "escudo") shield = 1;
+        if (it.kind === "libro") readAt = now;
+      } else { inv[it.kind]++; sfx.pickup(); }
+      pickups.push({ kind: it.kind, x: it.x, y: it.y, t: now, w: cur });
+    }
+    if (cur.grid[P.y][P.x] === "R" && powers.has("escudo") && shield === 0) { shield = 1; sfx.shieldBack(); }
+    if (cur.grid[P.y][P.x] === ">" && !powers.has("zapatillas")) { powers.add("zapatillas"); sfx.fast(); }
+    if (cur.grid[P.y][P.x] === "<" && powers.has("zapatillas")) { powers.delete("zapatillas"); sfx.slow(); }
+    if (cur.qportal && P.x === cur.qportal.x && P.y === cur.qportal.y) {
+      if (cur === city) teleport(cajas, { x: cajas.start.x, y: cajas.start.y }, now);
+      else teleport(city, { ...CAJAS_RETURN }, now);
+      return;
+    }
+    if (cur.crisol && P.x === cur.crisol.x && P.y === cur.crisol.y) {
+      if (inv.lente >= 2 && inv.armazon >= 1) {
+        inv.lente -= 2; inv.armazon--; inv.anteojos++; crafts.push({ x: P.x, y: P.y, t: now }); sfx.craft(); stats.crafted++;
+        pickups.push({ kind: "anteojos", x: P.x, y: P.y, t: now, w: cur });
+      } else deny(P.x, P.y, inv.lente < 2 ? "lente" : "armazon", now, null);
+    }
+    if (cur.musicbox && P.x === cur.musicbox.x && P.y === cur.musicbox.y && now - cur.musicbox.playedAt > 3200) {
+      cur.musicbox.playedAt = now; mseq = []; sfx.melody();
+    }
+    const note = cur.notes.find(n => n.x === P.x && n.y === P.y);
+    if (note) {
+      const vit = [...cur.doors.values()].find(d => d.kind === "vitrina");
+      note.at = now; sfx.note(note.i);
+      if (vit && !vit.open && now >= mCool) {
+        mseq.push(note.i);
+        if (mseq.length === melody.length) {
+          if (mseq.every((k, i) => k === melody[i])) { vit.open = true; vit.openAt = now + 400; setTimeout(sfx.open, 400); }
+          else { mseq = []; mCool = now + 2500; setTimeout(sfx.wrong, 450); }
+        }
+      }
+    }
+    if (cur === cajas) {
+      if (P.x >= 10) stats.cajas1 = true;
+      if (P.x >= 30) stats.hielo = true;
+      if (P.x === cajas.reset.x && P.y === cajas.reset.y && cajas.boxes.some(b => b.x !== b.x0 || b.y !== b.y0)) { resetRoom(now); return; }
+      const card = cajas.cards.find(c => c.x === P.x && c.y === P.y);
+      if (card && card.state === "down") {
+        if (flipped.length === 2) { flipped.forEach(c => { c.state = "down"; }); flipped = []; hideAt = 0; }
+        card.state = "up"; card.at = now; flipped.push(card); sfx.flip(SYMBOLS.indexOf(card.sym));
+        if (flipped.length === 2) {
+          if (flipped[0].sym === flipped[1].sym) {
+            flipped.forEach(c => { c.state = "done"; }); flipped = []; setTimeout(sfx.match, 200);
+            if (cajas.cards.every(c => c.state === "done")) { const pd = [...cajas.doors.values()].find(d => d.need === "pares"); pd.open = true; pd.openAt = now + 700; setTimeout(sfx.open, 700); }
+          } else hideAt = now + 1100;
+        }
+      }
+    }
+    if (cur === city) {
+      const reja = [...city.doors.values()].find(d => d.kind === "reja");
+      for (const p of city.peds) {
+        if (p.x !== P.x || p.y !== P.y || reja.open || p.lit) continue;
+        if (now < coolUntil) { deny(p.x, p.y, null, now, null); continue; }
+        p.lit = true; seq.push(p.shape); sfx.ped(Math.min(seq.length - 1, 2));
+        if (seq.length === city.peds.length) {
+          if (seq.every((sh, i) => sh === order[i])) { reja.open = true; reja.openAt = now + 350; setTimeout(sfx.open, 350); }
+          else { seq = []; coolUntil = now + 4000; setTimeout(() => { city.peds.forEach(q => q.lit = false); sfx.wrong(); }, 450); }
+        }
+      }
+      const g = doorAt(city, P.x, P.y);
+      if (g && g.kind === "grieta" && g.open) teleport(lab, { x: lab.portal.x, y: lab.portal.y }, now);
+      if (!won && P.x === city.goal.x && P.y === city.goal.y) {
+        won = true; wonAt = now; badge = true; store("punto.insignia", "1");
+        revealUntil = now + 9500; targetR += SPARK_R; sfx.win();
+      }
+    } else if (cur === lab && P.x === lab.portal.x && P.y === lab.portal.y) {
+      if (labOpen) { if (labAwake) { labAwake = false; labCalm = true; hunters = []; stats.escaped = true; } teleport(city, { ...CITY_RETURN }, now); }
+      else deny(P.x, P.y, null, now, lab.portal);
+    }
+    checkEnemies(now);
+  };
+  const checkEnemies = now => {
+    if (trans || cur !== lab) return;
+    for (const e of lab.enemies) if (e.x === P.x && e.y === P.y) return hurt(now, lab.portal);
+    if (hunters.some(h => h.x === P.x && h.y === P.y) && now >= invulnUntil) {
+      hurt(now, HUNT_SAFE); hunters.forEach(h => { h.x = h.sx; h.y = h.sy; });
+    }
+  };
+  // ═════ Persecución: al tomar la llave, el laberinto despierta
+  const HUNT_SPAWNS = [{ x: 21, y: 15 }, { x: 21, y: 13 }], HUNT_SAFE = { x: 15, y: 9 }, HUNT_MS = 170, HUNT_GRACE = 2000;
+  let huntFrom = 0;
+  const awaken = now => {
+    labAwake = true; lab.enemies.length = 0; huntFrom = now + HUNT_GRACE;
+    hunters = HUNT_SPAWNS.map(s => ({ x: s.x, y: s.y, sx: s.x, sy: s.y }));
+    flash = 0.3; shakeUntil = now + 900; sfx.awaken();
+  };
+  const stepHunters = now => {
+    if (!labAwake || cur !== lab || trans || now < huntFrom) return;
+    const safe = lab.grid[P.y][P.x] === "R";
+    const field = goal => {
+      const d = new Map([[goal.x + "," + goal.y, 0]]), q = [[goal.x, goal.y]];
+      while (q.length) {
+        const [x, y] = q.shift(), dd = d.get(x + "," + y);
+        for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + a, ny = y + b, k = nx + "," + ny;
+          if (d.has(k) || !inside(lab, nx, ny) || "#R".includes(lab.grid[ny][nx]) || boxAt(lab, nx, ny)) continue;
+          d.set(k, dd + 1); q.push([nx, ny]);
+        }
+      }
+      return d;
+    };
+    const toPlayer = safe ? null : field(P);
+    if (toPlayer) for (const h of hunters) {
+      h.trapped = !toPlayer.has(h.x + "," + h.y);
+      if (h.trapped && !h.wasTrapped) { h.wasTrapped = true; stats.trapped++; sfx.trapped(); }
+    }
+    for (const h of hunters) {
+      const d = toPlayer || field({ x: h.sx, y: h.sy });
+      let best = null, bd = d.get(h.x + "," + h.y) ?? Infinity;
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = h.x + a, ny = h.y + b, v = d.get(nx + "," + ny);
+        if (v === undefined || v >= bd || hunters.some(o => o !== h && o.x === nx && o.y === ny)) continue;
+        bd = v; best = [nx, ny];
+      }
+      if (best) { h.x = best[0]; h.y = best[1]; }
+    }
+    checkEnemies(now);
+  };
+  const stepEnemies = now => {
+    for (const e of lab.enemies) {
+      let nx = e.x + e.d;
+      if (nx < e.min || nx > e.max || boxAt(lab, nx, e.y)) { e.d *= -1; nx = e.x + e.d; }
+      if (boxAt(lab, nx, e.y)) continue;
+      e.x = nx;
+    }
+    if (awake) checkEnemies(now);
+  };
+  const stepTraffic = (dt, now) => {
+    for (const ln of city.lanes) {
+      for (let i = 0; i < ln.cars.length; i++) {
+        let x = ln.cars[i] + ln.dir * ln.speed * dt;
+        if (ln.dir > 0 && x > city.W) x -= city.W + ln.len;
+        if (ln.dir < 0 && x + ln.len < 0) x += city.W + ln.len;
+        ln.cars[i] = x;
+        if (awake && cur === city && P.y === ln.y && P.x + 0.85 > x && P.x + 0.15 < x + ln.len) {
+          hurt(now, { x: city.start.x, y: city.start.y });
+        }
+      }
+    }
+  };
+
+  // ═════════════════════════ Entrada ═════════════════════════
+  const KEYS = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
+  const pressed = [];
+  addEventListener("keydown", e => {
+    const now = performance.now();
+    if (!awake) { wake(now); e.preventDefault(); return; }
+    const d = KEYS[e.code];
+    if (!d) return;
+    e.preventDefault();
+    if (!pressed.includes(e.code)) { pressed.push(e.code); if (!trans) tryMove(d[0], d[1], now); }
+  });
+  addEventListener("keyup", e => { const i = pressed.indexOf(e.code); if (i >= 0) pressed.splice(i, 1); });
+  addEventListener("blur", () => { pressed.length = 0; pointer = null; });
+
+  const cv = document.getElementById("c");
+  const ctx = cv.getContext("2d");
+  let pointer = null, S = 50, vw = 0, vh = 0, dpr = 1;
+  const pointerDir = () => {
+    if (!pointer) return null;
+    const dx = pointer.x - vw / 2, dy = pointer.y - vh / 2;
+    if (Math.hypot(dx, dy) < S * 0.45) return null;
+    return Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)];
+  };
+  cv.addEventListener("pointerdown", e => {
+    cv.focus();
+    const now = performance.now();
+    if (!awake) { wake(now); return; }
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    pointer = { x: e.clientX, y: e.clientY };
+    const d = pointerDir(); if (d && !trans) tryMove(d[0], d[1], now);
+  });
+  cv.addEventListener("pointermove", e => { if (pointer) pointer = { x: e.clientX, y: e.clientY }; });
+  const release = () => { pointer = null; };
+  cv.addEventListener("pointerup", release);
+  cv.addEventListener("pointercancel", release);
+
+  const resize = () => {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    vw = innerWidth; vh = innerHeight;
+    cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+  };
+  addEventListener("resize", resize); resize();
+  const safe = side => parseFloat(getComputedStyle(document.documentElement)["padding" + side]) || 0;
+
+  // ═════════════════════════ Dibujo ═════════════════════════
+  const L = "242,241,236";
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const rgba = a => `rgba(${L},${clamp01(a)})`;
+  const SERIF = '"Cormorant Garamond", Georgia, "Times New Roman", serif';
+
+  const shape = (kind, x, y, r, fill) => {
+    ctx.beginPath();
+    if (kind === "circulo") ctx.arc(x, y, r, 0, Math.PI * 2);
+    else if (kind === "cuadrado") ctx.rect(x - r * 0.88, y - r * 0.88, r * 1.76, r * 1.76);
+    else if (kind === "cruz") { const q = r * 0.32; ctx.moveTo(x - q, y - r); ctx.lineTo(x + q, y - r); ctx.lineTo(x + q, y - q); ctx.lineTo(x + r, y - q); ctx.lineTo(x + r, y + q); ctx.lineTo(x + q, y + q); ctx.lineTo(x + q, y + r); ctx.lineTo(x - q, y + r); ctx.lineTo(x - q, y + q); ctx.lineTo(x - r, y + q); ctx.lineTo(x - r, y - q); ctx.lineTo(x - q, y - q); ctx.closePath(); }
+    else if (kind === "estrella") { for (let k = 0; k < 10; k++) { const ang = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r * 1.05; k ? ctx.lineTo(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr) : ctx.moveTo(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr); } ctx.closePath(); }
+    else if (kind === "luna") { ctx.arc(x, y, r, Math.PI * 0.3, Math.PI * 1.7); ctx.arc(x + r * 0.55, y, r * 0.8, Math.PI * 1.55, Math.PI * 0.45, true); ctx.closePath(); }
+    else if (kind === "onda") { ctx.moveTo(x - r, y); for (let k = 1; k <= 12; k++) { const px = x - r + k * (2 * r / 12); ctx.lineTo(px, y + Math.sin(k / 12 * Math.PI * 2) * r * 0.55); } ctx.moveTo(x - r, y + r * 0.6); ctx.lineTo(x + r, y + r * 0.6); }
+    else if (kind === "rombo") { ctx.moveTo(x, y - r * 1.05); ctx.lineTo(x + r * 0.8, y); ctx.lineTo(x, y + r * 1.05); ctx.lineTo(x - r * 0.8, y); ctx.closePath(); }
+    else { ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.95, y + r * 0.72); ctx.lineTo(x - r * 0.95, y + r * 0.72); ctx.closePath(); }
+    fill ? ctx.fill() : ctx.stroke();
+  };
+  const icon = (kind, x, y, r, a, hollow) => {
+    ctx.save();
+    ctx.strokeStyle = ctx.fillStyle = rgba(a);
+    ctx.lineWidth = Math.max(1.4, r * 0.16);
+    ctx.lineJoin = ctx.lineCap = "round";
+    if (hollow) ctx.setLineDash([r * 0.28, r * 0.22]);
+    const P2 = (pts, close) => { ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(x + px * r, y + py * r) : ctx.moveTo(x + px * r, y + py * r)); if (close) ctx.closePath(); };
+    switch (kind) {
+      case "fragmento":
+        ctx.beginPath(); ctx.moveTo(x - r * 0.15, y - r); ctx.arc(x - r * 0.15, y, r, -Math.PI / 2, Math.PI / 2);
+        ctx.lineTo(x + r * 0.15, y + r * 0.5); ctx.lineTo(x - r * 0.3, y + r * 0.1); ctx.lineTo(x + r * 0.1, y - r * 0.35); ctx.closePath();
+        hollow ? ctx.stroke() : ctx.fill(); break;
+      case "llave":
+        ctx.beginPath(); ctx.arc(x - r * 0.5, y, r * 0.42, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.08, y); ctx.lineTo(x + r, y);
+        ctx.moveTo(x + r * 0.55, y); ctx.lineTo(x + r * 0.55, y + r * 0.4);
+        ctx.moveTo(x + r * 0.9, y); ctx.lineTo(x + r * 0.9, y + r * 0.5); ctx.stroke(); break;
+      case "tabla":
+        ctx.strokeRect(x - r, y - r * 0.32, r * 2, r * 0.64);
+        ctx.beginPath(); ctx.moveTo(x - r * 0.4, y - r * 0.32); ctx.lineTo(x - r * 0.4, y + r * 0.32); ctx.moveTo(x + r * 0.4, y - r * 0.32); ctx.lineTo(x + r * 0.4, y + r * 0.32); ctx.stroke(); break;
+      case "libro":
+        P2([[0, -0.55], [-0.95, -0.75], [-0.95, 0.6], [0, 0.8], [0.95, 0.6], [0.95, -0.75]], true); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y - r * 0.55); ctx.lineTo(x, y + r * 0.8); ctx.stroke(); break;
+      case "zapatillas":
+        P2([[-0.9, -0.5], [-0.2, 0], [-0.9, 0.5]]); ctx.stroke();
+        P2([[-0.1, -0.5], [0.6, 0], [-0.1, 0.5]]); ctx.stroke(); break;
+      case "escudo":
+        P2([[0, -0.9], [0.8, -0.55], [0.7, 0.25], [0, 0.95], [-0.7, 0.25], [-0.8, -0.55]], true); ctx.stroke(); break;
+      case "sombrero":
+        ctx.beginPath(); ctx.moveTo(x - r, y + r * 0.45); ctx.lineTo(x + r, y + r * 0.45); ctx.stroke();
+        P2([[-0.55, 0.45], [-0.35, -0.55], [0.35, -0.55], [0.55, 0.45]]); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.45, y + r * 0.05); ctx.lineTo(x + r * 0.45, y + r * 0.05); ctx.stroke(); break;
+      case "orden":
+        ctx.lineWidth = Math.max(1.2, r * 0.12);
+        shape("circulo", x - r * 1.2, y, r * 0.28, false); shape("cuadrado", x - r * 0.4, y, r * 0.28, false); shape("triangulo", x + r * 0.4, y + r * 0.04, r * 0.32, false); shape("rombo", x + r * 1.2, y, r * 0.3, false); break;
+      case "anteojos":
+        ctx.beginPath(); ctx.arc(x - r * 0.48, y + r * 0.1, r * 0.38, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + r * 0.48, y + r * 0.1, r * 0.38, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.12, y); ctx.quadraticCurveTo(x, y - r * 0.18, x + r * 0.12, y); ctx.moveTo(x - r * 0.86, y); ctx.lineTo(x - r, y - r * 0.35); ctx.moveTo(x + r * 0.86, y); ctx.lineTo(x + r, y - r * 0.35); ctx.stroke(); break;
+      case "lente":
+        ctx.beginPath(); ctx.arc(x, y, r * 0.62, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, r * 0.36, Math.PI * 1.1, Math.PI * 1.6); ctx.stroke(); break;
+      case "armazon":
+        ctx.beginPath(); ctx.arc(x - r * 0.48, y + r * 0.1, r * 0.38, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + r * 0.48, y + r * 0.1, r * 0.38, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.12, y); ctx.quadraticCurveTo(x, y - r * 0.18, x + r * 0.12, y); ctx.moveTo(x - r * 0.86, y); ctx.lineTo(x - r, y - r * 0.35); ctx.moveTo(x + r * 0.86, y); ctx.lineTo(x + r, y - r * 0.35); ctx.stroke(); break;
+      case "melodia":
+        ctx.beginPath(); ctx.ellipse(x - r * 0.35, y + r * 0.5, r * 0.3, r * 0.22, -0.4, 0, Math.PI * 2); hollow ? ctx.stroke() : ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.08, y + r * 0.45); ctx.lineTo(x - r * 0.08, y - r * 0.8); ctx.lineTo(x + r * 0.55, y - r * 0.5); ctx.stroke(); break;
+      case "pares":
+        ctx.strokeRect(x - r * 0.95, y - r * 0.6, r * 0.8, r * 1.2); ctx.strokeRect(x + r * 0.15, y - r * 0.6, r * 0.8, r * 1.2);
+        ctx.lineWidth = Math.max(1, r * 0.1); shape("estrella", x - r * 0.55, y, r * 0.22, false); shape("estrella", x + r * 0.55, y, r * 0.22, false); break;
+      case "barreta":
+        P2([[-0.85, 0.85], [0.45, -0.45], [0.55, -0.75], [0.85, -0.85]]); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - r * 0.85, y + r * 0.85); ctx.lineTo(x - r * 0.95, y + r * 0.55); ctx.stroke(); break;
+    }
+    ctx.restore();
+  };
+  const rings = (sx, sy, a, t) => {
+    ctx.strokeStyle = rgba(0.95 * a);
+    for (let k = 0; k < 3; k++) {
+      const r = S * (0.12 + k * 0.1), rot = (reduced ? 0 : t / (500 - k * 120)) * (k % 2 ? -1 : 1);
+      ctx.beginPath(); ctx.arc(sx, sy, r, rot, rot + Math.PI * 1.3); ctx.stroke();
+    }
+  };
+  // garabatos: lo que se ve de un cartel cuando todavía no sabés leer
+  const scribble = (text, x, y, size, a) => {
+    let h = 7;
+    ctx.save(); ctx.strokeStyle = rgba(a); ctx.lineWidth = 1.2; ctx.lineCap = "round";
+    const cw = size * 0.46, total = text.length * cw; let px = x - total / 2;
+    for (const ch of text) {
+      if (ch !== " ") {
+        h = (h * 31 + ch.charCodeAt(0)) % 997;
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+          const r1 = ((h * (k + 3)) % 17) / 17, r2 = ((h * (k + 7)) % 13) / 13;
+          const ax = px + r1 * cw * 0.8, ay = y - size * 0.35 + r2 * size * 0.7;
+          k ? ctx.lineTo(ax, ay) : ctx.moveTo(ax, ay);
+        }
+        ctx.stroke();
+      }
+      px += cw;
+    }
+    ctx.restore();
+  };
+  const wrap = (text, maxW) => {
+    const words = text.split(" "), lines = []; let line = "";
+    for (const wd of words) { const test = line ? line + " " + wd : wd; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = wd; } else line = test; }
+    if (line) lines.push(line); return lines;
+  };
+
+  const draw = t => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, vw, vh);
+    const sh = t < shakeUntil && !reduced ? (shakeUntil - t) / 900 * 10 : 0;
+    const w = cur, cx = vw / 2 + (Math.random() - 0.5) * sh, cy = vh / 2 + (Math.random() - 0.5) * sh;
+    const Sn = Math.max(34, Math.min(84, Math.min(vw, vh) / 9)), Sf = Math.min(vw / (w.W + 1), vh / (w.H + 1));
+    S = Sn + (Sf - Sn) * zoomE;
+    const camX = dp.x + ((w.W - 1) / 2 - dp.x) * zoomE, camY = dp.y + ((w.H - 1) / 2 - dp.y) * zoomE;
+    const toX = x => (x - camX) * S + cx, toY = y => (y - camY) * S + cy;
+    const dist = (x, y) => Math.hypot(x - dp.x, y - dp.y);
+    const vis = (x, y) => awake ? (w.lit ? 1 : clamp01((R + 0.45 - dist(x, y)) / 0.9)) : 0;
+    const memA = i => Math.max(0, 1 - (t - w.seen[i]) / MEM_MS) * MEM_A;
+    const cellA = (x, y) => Math.max(vis(x, y), memA(y * w.W + x));
+    const glowA = (x, y, reach, max) => awake ? clamp01((R + reach - dist(x, y)) / (reach * 0.8)) * max : 0;
+    const isCity = w === city, hat = powers.has("sombrero");
+    const solid = (x, y) => !inside(w, x, y) || "#%".includes(w.grid[y][x]) || !!doorAt(w, x, y);
+
+    const x0 = Math.max(0, Math.floor(camX - cx / S) - 1), x1 = Math.min(w.W - 1, Math.ceil(camX + cx / S) + 1);
+    const y0 = Math.max(0, Math.floor(camY - cy / S) - 1), y1 = Math.min(w.H - 1, Math.ceil(camY + cy / S) + 1);
+    const lw = Math.max(1.2, S / 34);
+    ctx.lineWidth = lw; ctx.lineCap = "round";
+
+    // ── terreno
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * w.W + x, v = vis(x, y);
+      if (v > 0.04) w.seen[i] = t;
+      let a = Math.max(v, memA(i));
+      const c = w.grid[y][x];
+      if (c === "R") a = Math.max(a, glowA(x, y, 1.6, 0.35));
+      if (a < 0.01) continue;
+      const sx = toX(x), sy = toY(y), h = S / 2;
+      const d = doorAt(w, x, y);
+      const wallLike = c === "#" || c === "%" || (d && (d.kind === "casa" || d.kind === "grieta") && !(d.kind === "casa" && d.open));
+      if (wallLike) {
+        if (isCity) {
+          ctx.fillStyle = rgba(0.11 * a); ctx.fillRect(sx - h, sy - h, S, S);
+          ctx.strokeStyle = rgba(0.5 * a); ctx.beginPath();
+          if (!solid(x, y - 1)) { ctx.moveTo(sx - h, sy - h); ctx.lineTo(sx + h, sy - h); }
+          if (!solid(x, y + 1)) { ctx.moveTo(sx - h, sy + h); ctx.lineTo(sx + h, sy + h); }
+          if (!solid(x - 1, y)) { ctx.moveTo(sx - h, sy - h); ctx.lineTo(sx - h, sy + h); }
+          if (!solid(x + 1, y)) { ctx.moveTo(sx + h, sy - h); ctx.lineTo(sx + h, sy + h); }
+          ctx.stroke();
+          if (c === "%" && hat) {
+            const fl = reduced ? 0.8 : 0.5 + 0.5 * Math.abs(Math.sin(t / 260 + x));
+            ctx.save(); ctx.setLineDash([S * 0.08, S * 0.08]); ctx.strokeStyle = rgba(0.9 * a * fl);
+            ctx.strokeRect(sx - h * 0.8, sy - h * 0.8, S * 0.8, S * 0.8); ctx.restore();
+          }
+        } else if (w === cajas) {
+          ctx.fillStyle = rgba(0.06 * a); ctx.fillRect(sx - h, sy - h, S, S);
+          ctx.strokeStyle = rgba(0.35 * a); ctx.beginPath();
+          for (const o of [0.5, S * 0.18]) {
+            if (!solid(x, y - 1)) { ctx.moveTo(sx - h, sy - h + o); ctx.lineTo(sx + h, sy - h + o); }
+            if (!solid(x, y + 1)) { ctx.moveTo(sx - h, sy + h - o); ctx.lineTo(sx + h, sy + h - o); }
+            if (!solid(x - 1, y)) { ctx.moveTo(sx - h + o, sy - h); ctx.lineTo(sx - h + o, sy + h); }
+            if (!solid(x + 1, y)) { ctx.moveTo(sx + h - o, sy - h); ctx.lineTo(sx + h - o, sy + h); }
+          }
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = rgba(0.45 * a);
+          const m = S * 0.14; ctx.strokeRect(sx - h + m, sy - h + m, S - 2 * m, S - 2 * m);
+        }
+        continue;
+      }
+      if (c === "~" || c === "b") {
+        const ph = reduced ? 0 : t / 600;
+        ctx.strokeStyle = rgba(0.32 * a);
+        for (let k = -1; k <= 1; k += 2) {
+          ctx.beginPath();
+          for (let s = 0; s <= 6; s++) { const px = sx - h * 0.8 + s * S * 0.8 / 6, py = sy + k * S * 0.18 + Math.sin(ph + s * 1.1 + x + k) * S * 0.05; s ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+          ctx.stroke();
+        }
+        if (c === "b") {
+          const jit = reduced ? 0 : (Math.random() < 0.15 ? S * 0.03 : 0);
+          ctx.strokeStyle = rgba(0.75 * a);
+          ctx.beginPath(); ctx.moveTo(sx - h, sy - S * 0.3); ctx.lineTo(sx - S * 0.1 + jit, sy - S * 0.26);
+          ctx.moveTo(sx + S * 0.12, sy + S * 0.3); ctx.lineTo(sx + h, sy + S * 0.28 - jit); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(sx - h, sy - h); ctx.lineTo(sx - h, sy + h); ctx.moveTo(sx + h, sy - h); ctx.lineTo(sx + h, sy + h); ctx.stroke();
+        }
+        continue;
+      }
+      if (c === "=") {
+        const b = builds.find(q => q.x === x && q.y === y && w === city), k = b ? clamp01((t - b.t) / 500) : 1;
+        ctx.strokeStyle = rgba(0.6 * a * k);
+        ctx.beginPath(); ctx.moveTo(sx - h, sy - h); ctx.lineTo(sx - h, sy + h); ctx.moveTo(sx + h, sy - h); ctx.lineTo(sx + h, sy + h); ctx.stroke();
+        for (let s = -1; s <= 1; s++) { ctx.beginPath(); ctx.moveTo(sx - h * 0.85, sy + s * S * 0.3); ctx.lineTo(sx + h * 0.85, sy + s * S * 0.3); ctx.stroke(); }
+        continue;
+      }
+      if (c === "^") {
+        ctx.fillStyle = rgba(0.07 * a); ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.strokeStyle = rgba(0.45 * a);
+        for (let s = -1; s <= 1; s++) { ctx.beginPath(); ctx.moveTo(sx - h * 0.7 + s * S * 0.25, sy + h * 0.7); ctx.lineTo(sx - h * 0.2 + s * S * 0.25 + h * 0.5, sy - h * 0.7); ctx.stroke(); }
+        continue;
+      }
+      if (w === cajas) { ctx.strokeStyle = rgba(0.07 * a); ctx.strokeRect(sx - h + 0.5, sy - h + 0.5, S - 1, S - 1); }
+      if (c === "i") {
+        ctx.fillStyle = rgba(0.07 * a); ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.strokeStyle = rgba(0.3 * a); ctx.beginPath(); ctx.moveTo(sx - S * 0.28, sy + S * 0.1); ctx.lineTo(sx - S * 0.1, sy - S * 0.08); ctx.moveTo(sx + S * 0.02, sy + S * 0.24); ctx.lineTo(sx + S * 0.26, sy); ctx.stroke();
+        continue;
+      }
+      if (c === "r") {
+        ctx.fillStyle = rgba(0.07 * a); ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.fillStyle = rgba(0.22 * a); ctx.strokeStyle = rgba(0.7 * a); ctx.beginPath();
+        [[-0.3, 0.1], [-0.2, -0.22], [0.08, -0.32], [0.3, -0.1], [0.28, 0.22], [-0.05, 0.3]].forEach(([px, py], k) => k ? ctx.lineTo(sx + px * S, sy + py * S) : ctx.moveTo(sx + px * S, sy + py * S));
+        ctx.closePath(); ctx.fill(); ctx.stroke(); continue;
+      }
+      if (c === "Z") {
+        ctx.strokeStyle = rgba(0.75 * a); ctx.beginPath(); ctx.arc(sx, sy, S * 0.22, -Math.PI * 0.2, Math.PI * 1.45); ctx.stroke();
+        const ex = sx + Math.cos(-Math.PI * 0.2) * S * 0.22, ey = sy + Math.sin(-Math.PI * 0.2) * S * 0.22;
+        ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - S * 0.1, ey - S * 0.02); ctx.moveTo(ex, ey); ctx.lineTo(ex + S * 0.01, ey + S * 0.1); ctx.stroke(); continue;
+      }
+      if (c === "C") {
+        ctx.strokeStyle = rgba(0.8 * a); ctx.beginPath(); ctx.arc(sx, sy - S * 0.02, S * 0.26, 0, Math.PI); ctx.moveTo(sx - S * 0.32, sy - S * 0.02); ctx.lineTo(sx + S * 0.32, sy - S * 0.02); ctx.moveTo(sx - S * 0.12, sy + S * 0.3); ctx.lineTo(sx + S * 0.12, sy + S * 0.3); ctx.stroke();
+        continue;
+      }
+      if (c === "m") {
+        const mb = w.musicbox, play = clamp01(1 - (t - mb.playedAt) / 3000);
+        ctx.strokeStyle = rgba((0.7 + 0.3 * play) * a); ctx.strokeRect(sx - S * 0.26, sy - S * 0.12, S * 0.52, S * 0.34);
+        ctx.beginPath(); ctx.moveTo(sx - S * 0.26, sy - S * 0.12); ctx.lineTo(sx - S * 0.18, sy - S * 0.3); ctx.lineTo(sx + S * 0.34, sy - S * 0.3); ctx.lineTo(sx + S * 0.26, sy - S * 0.12); ctx.stroke();
+        if (play > 0) { ctx.fillStyle = rgba(0.9 * play * a); ctx.beginPath(); ctx.arc(sx + S * 0.05, sy - S * 0.45 - (1 - play) * S * 0.3, S * 0.05, 0, Math.PI * 2); ctx.fill(); }
+        continue;
+      }
+      if (c === "n") {
+        const nt = w.notes.find(q => q.x === x && q.y === y), lit = clamp01(1 - (t - nt.at) / 600);
+        ctx.fillStyle = rgba((0.06 + 0.3 * lit) * a); ctx.fillRect(sx - S * 0.36, sy - S * 0.36, S * 0.72, S * 0.72);
+        ctx.strokeStyle = rgba(0.6 * a); ctx.strokeRect(sx - S * 0.36, sy - S * 0.36, S * 0.72, S * 0.72);
+        for (let k = 0; k <= nt.i; k++) { const bx = sx + (k - nt.i / 2) * S * 0.1; ctx.beginPath(); ctx.moveTo(bx, sy + S * 0.16); ctx.lineTo(bx, sy - S * 0.16); ctx.stroke(); }
+        continue;
+      }
+      if (c === "Q") {
+        const rot = reduced ? 0 : t / 900;
+        ctx.strokeStyle = rgba(0.9 * a);
+        for (let k = 0; k < 2; k++) { ctx.save(); ctx.translate(sx, sy); ctx.rotate(rot * (k ? -1 : 1) + k * 0.4); const r = S * (0.16 + k * 0.12); ctx.strokeRect(-r, -r, r * 2, r * 2); ctx.restore(); }
+        continue;
+      }
+      if (c === ">" || c === "<") {
+        const on = (c === ">") === powers.has("zapatillas");
+        ctx.fillStyle = rgba((on ? 0.16 : 0.06) * a); ctx.fillRect(sx - S * 0.4, sy - S * 0.4, S * 0.8, S * 0.8);
+        ctx.strokeStyle = rgba((on ? 0.95 : 0.55) * a); ctx.strokeRect(sx - S * 0.4, sy - S * 0.4, S * 0.8, S * 0.8);
+        const dir = c === ">" ? 1 : -1;
+        ctx.beginPath();
+        for (const off of [-0.12, 0.12]) { ctx.moveTo(sx + (off - 0.08 * dir) * S, sy - S * 0.15); ctx.lineTo(sx + (off + 0.08 * dir) * S, sy); ctx.lineTo(sx + (off - 0.08 * dir) * S, sy + S * 0.15); }
+        ctx.stroke();
+        continue;
+      }
+      if (c === "," || c === "E" || c === "V") { ctx.fillStyle = rgba(0.045 * a); ctx.fillRect(sx - h, sy - h, S, S); }
+      if (c === "R") { ctx.fillStyle = rgba(0.07 * a); ctx.fillRect(sx - h, sy - h, S, S); }
+      ctx.fillStyle = rgba(0.4 * a);
+      ctx.fillRect(sx - 1, sy - 1, 2, 2);
+    }
+
+    // ── tránsito
+    if (isCity) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(toX(0.5), 0, toX(w.W - 1.5) - toX(0.5), vh); ctx.clip();
+      for (const ln of w.lanes) for (const x of ln.cars) {
+        const mid = x + ln.len / 2 - 0.5;
+        const a = Math.max(vis(mid, ln.y), glowA(mid, ln.y, 2.4, 0.55));
+        if (a < 0.02) continue;
+        const sx = toX(x - 0.5), sy = toY(ln.y), wdt = ln.len * S;
+        ctx.fillStyle = "#000"; ctx.fillRect(sx + S * 0.06, sy - S * 0.32, wdt - S * 0.12, S * 0.64);
+        ctx.strokeStyle = rgba(0.8 * a); ctx.strokeRect(sx + S * 0.06, sy - S * 0.32, wdt - S * 0.12, S * 0.64);
+        const fx = ln.dir > 0 ? sx + wdt - S * 0.1 : sx + S * 0.1;
+        ctx.fillStyle = rgba(a);
+        [-0.18, 0.18].forEach(o => { ctx.beginPath(); ctx.arc(fx, sy + o * S, S * 0.05, 0, Math.PI * 2); ctx.fill(); });
+      }
+      ctx.restore();
+    }
+
+    // ── puertas
+    for (const d of w.doors.values()) {
+      const base = cellA(d.x, d.y);
+      const since = t - d.shakeAt;
+      const shake = since < 420 ? Math.sin(since / 22) * S * 0.09 * (1 - since / 420) : 0;
+      const sx = toX(d.x) + shake, sy = toY(d.y), open = t - d.openAt;
+      if (d.kind === "grieta") {
+        if (!d.open) {
+          const flick = reduced ? 0.8 : 0.55 + 0.45 * Math.abs(Math.sin(t / 130) * Math.sin(t / 370));
+          const a = Math.max(base, glowA(d.x, d.y, 3.2, 0.5)) * flick;
+          if (a < 0.01) continue;
+          ctx.strokeStyle = rgba(a); ctx.lineWidth = lw * 1.2; ctx.beginPath();
+          [[0, -0.45], [0.08, -0.25], [-0.06, -0.05], [0.07, 0.12], [-0.04, 0.3], [0.03, 0.45]].forEach(([px, py], k) => k ? ctx.lineTo(sx + px * S, sy + py * S) : ctx.moveTo(sx + px * S, sy + py * S));
+          ctx.stroke(); ctx.lineWidth = lw;
+        } else {
+          const a = Math.max(base, glowA(d.x, d.y, 2.5, 0.6)); if (a < 0.01) continue;
+          const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, S * 0.55);
+          g.addColorStop(0, rgba(0.5 * a)); g.addColorStop(1, rgba(0));
+          ctx.fillStyle = g; ctx.fillRect(sx - S / 2, sy - S / 2, S, S);
+          rings(sx, sy, a, t);
+        }
+      } else if (d.kind === "casa") {
+        const a = base; if (a < 0.01) continue;
+        if (!d.open) {
+          ctx.fillStyle = "#000"; ctx.fillRect(sx - S * 0.3, sy - S * 0.42, S * 0.6, S * 0.84);
+          ctx.strokeStyle = rgba(0.85 * a); ctx.strokeRect(sx - S * 0.3, sy - S * 0.42, S * 0.6, S * 0.84);
+          ctx.fillStyle = rgba(0.85 * a);
+          ctx.beginPath(); ctx.arc(sx, sy - S * 0.02, S * 0.06, 0, Math.PI * 2); ctx.fill();
+          ctx.fillRect(sx - S * 0.02, sy, S * 0.04, S * 0.14);
+        } else if (open < 900) {
+          const k = open / 900; ctx.strokeStyle = rgba((1 - k) * a);
+          ctx.strokeRect(sx - S * 0.3 - k * S * 0.25, sy - S * 0.42, S * 0.6 * (1 - k), S * 0.84);
+        }
+      } else if (d.kind === "vitrina") {
+        const a = base; if (a < 0.01) continue;
+        if (!d.open || open < 900) {
+          const k = d.open ? clamp01(open / 900) : 0;
+          ctx.strokeStyle = rgba(0.75 * a * (1 - k)); ctx.strokeRect(sx - S * 0.38, sy - S * 0.38 - k * S * 0.3, S * 0.76, S * 0.76);
+          ctx.strokeStyle = rgba(0.35 * a * (1 - k)); ctx.beginPath(); ctx.moveTo(sx - S * 0.26, sy + S * 0.1); ctx.lineTo(sx - S * 0.06, sy - S * 0.26); ctx.moveTo(sx - S * 0.14, sy + S * 0.22); ctx.lineTo(sx + S * 0.02, sy - S * 0.06); ctx.stroke();
+        }
+      } else if (d.kind === "reja") {
+        const a = base; if (a < 0.01) continue;
+        if (!d.open || open < 900) {
+          const k = d.open ? clamp01(open / 900) : 0;
+          ctx.strokeStyle = rgba(0.8 * a * (1 - k));
+          for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.moveTo(sx + j * S * 0.22, sy - S * 0.42 - k * S * 0.6); ctx.lineTo(sx + j * S * 0.22, sy + S * 0.42 - k * S * 0.6); ctx.stroke(); }
+        }
+      }
+      if (d.open && open > 0 && open < 1100) {
+        const k = open / 1100;
+        ctx.strokeStyle = rgba((1 - k) * 0.8); ctx.beginPath(); ctx.arc(toX(d.x), sy, S * (0.3 + k * 1.6), 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+    // ── construcciones recientes
+    for (const b of builds) {
+      const k = (t - b.t) / 900; if (k > 1 || w !== city) continue;
+      ctx.strokeStyle = rgba((1 - k) * 0.7); ctx.beginPath(); ctx.arc(toX(b.x), toY(b.y), S * (0.2 + k), 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // ── portal del laberinto: muestra siempre lo que pide
+    if (w === lab) {
+      const p = lab.portal, open = labOpen;
+      const since = t - p.shakeAt, shake = since < 420 && since > 0 ? Math.sin(since / 22) * S * 0.09 * (1 - since / 420) : 0;
+      const a = Math.max(cellA(p.x, p.y), glowA(p.x, p.y, open ? 3 : 1.5, open ? 0.7 : 0.35));
+      if (a > 0.01) {
+        const sx = toX(p.x) + shake, sy = toY(p.y);
+        if (open) rings(sx, sy, a, t);
+        else {
+          ctx.strokeStyle = rgba(0.55 * a); ctx.beginPath(); ctx.arc(sx, sy, S * 0.4, 0, Math.PI * 2); ctx.stroke();
+          icon("llave", sx, sy, S * 0.2, 0.85 * a, true);
+        }
+      }
+    }
+
+    // ── objetos
+    for (const it of w.items) {
+      if (it.taken) continue;
+      const sx = toX(it.x), sy = toY(it.y);
+      if (it.kind === "chispa") {
+        const a = cellA(it.x, it.y); if (a < 0.01) continue;
+        const tw = reduced ? 1 : 0.75 + 0.25 * Math.sin(t / 180 + it.x * 3.1);
+        const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, S * 0.4);
+        g.addColorStop(0, rgba(0.35 * a * tw)); g.addColorStop(1, rgba(0));
+        ctx.fillStyle = g; ctx.fillRect(sx - S / 2, sy - S / 2, S, S);
+        ctx.fillStyle = rgba(a * tw); ctx.beginPath(); ctx.arc(sx, sy, S * 0.055, 0, Math.PI * 2); ctx.fill();
+      } else {
+        const a = it.hidden ? cellA(it.x, it.y) : Math.max(cellA(it.x, it.y), glowA(it.x, it.y, 1.6, 0.45)); if (a < 0.01) continue;
+        const bob = reduced ? 0 : Math.sin(t / 400) * S * 0.04;
+        const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, S * 0.5);
+        g.addColorStop(0, rgba(0.25 * a)); g.addColorStop(1, rgba(0));
+        ctx.fillStyle = g; ctx.fillRect(sx - S / 2, sy - S / 2, S, S);
+        icon(it.kind, sx, sy + bob, S * 0.22, a, false);
+      }
+    }
+    // ── cartas de memoria
+    for (const cd of w.cards) {
+      const a = cellA(cd.x, cd.y); if (a < 0.01) continue;
+      const sx = toX(cd.x), sy = toY(cd.y), sz = S * 0.8;
+      const up = cd.state !== "down", done = cd.state === "done";
+      ctx.fillStyle = rgba((done ? 0.16 : up ? 0.1 : 0.05) * a); ctx.fillRect(sx - sz / 2, sy - sz / 2, sz, sz);
+      ctx.strokeStyle = rgba((done ? 0.9 : up ? 0.75 : 0.4) * a); ctx.strokeRect(sx - sz / 2, sy - sz / 2, sz, sz);
+      if (up) { ctx.strokeStyle = ctx.fillStyle = rgba((done ? 1 : 0.9) * a); shape(cd.sym, sx, sy, S * 0.2, false); }
+      else { ctx.fillStyle = rgba(0.3 * a); for (const [ox, oy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { ctx.beginPath(); ctx.arc(sx + ox * S * 0.14, sy + oy * S * 0.14, S * 0.025, 0, Math.PI * 2); ctx.fill(); } }
+    }
+    // ── cajas para empujar
+    for (const b of w.boxes) {
+      const a = cellA(b.x, b.y); if (a < 0.01) continue;
+      const sx = toX(b.x), sy = toY(b.y), sz = S * 0.78;
+      if (w === lab) {
+        ctx.fillStyle = "#000"; ctx.fillRect(sx - sz / 2, sy - sz / 2, sz, sz);
+        ctx.strokeStyle = rgba(0.75 * a); ctx.strokeRect(sx - sz / 2, sy - sz / 2, sz, sz);
+        ctx.strokeStyle = rgba(0.45 * a);
+        for (const [ox, oy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) { ctx.beginPath(); ctx.moveTo(sx + ox * sz * 0.18 - oy * sz * 0.1, sy + oy * sz * 0.18 - ox * sz * 0.1); ctx.lineTo(sx + ox * sz * 0.32, sy + oy * sz * 0.32); ctx.lineTo(sx + ox * sz * 0.18 + oy * sz * 0.1, sy + oy * sz * 0.18 + ox * sz * 0.1); ctx.stroke(); }
+        continue;
+      }
+      ctx.fillStyle = "#000"; ctx.fillRect(sx - sz / 2, sy - sz / 2, sz, sz);
+      ctx.fillStyle = rgba(0.12 * a); ctx.fillRect(sx - sz / 2, sy - sz / 2, sz, sz);
+      ctx.strokeStyle = rgba(0.85 * a); ctx.strokeRect(sx - sz / 2, sy - sz / 2, sz, sz);
+      ctx.strokeStyle = rgba(0.4 * a); ctx.strokeRect(sx - sz * 0.32, sy - sz * 0.32, sz * 0.64, sz * 0.64);
+      ctx.beginPath(); ctx.moveTo(sx - sz * 0.32, sy - sz * 0.32); ctx.lineTo(sx + sz * 0.32, sy + sz * 0.32); ctx.moveTo(sx + sz * 0.32, sy - sz * 0.32); ctx.lineTo(sx - sz * 0.32, sy + sz * 0.32); ctx.stroke();
+    }
+    // ── el crisol acaba de crear algo
+    for (const cf of crafts) {
+      const k = (t - cf.t) / 1200; if (k > 1 || w !== city) continue;
+      ctx.strokeStyle = rgba((1 - k) * 0.9);
+      for (const lag of [0, 0.2]) { const kk = clamp01((k - lag) / (1 - lag)); ctx.beginPath(); ctx.arc(toX(cf.x), toY(cf.y), S * (0.2 + kk * 1.2), 0, Math.PI * 2); ctx.stroke(); }
+    }
+    // ── pedestales: placas en el piso, para pisar
+    const reja = isCity ? [...city.doors.values()].find(d => d.kind === "reja") : null;
+    for (const p of w.peds) {
+      const a = cellA(p.x, p.y); if (a < 0.01) continue;
+      const on = p.lit || (reja && reja.open), cold = !on && t < coolUntil, sx = toX(p.x), sy = toY(p.y);
+      ctx.fillStyle = rgba(0.1 * a); ctx.beginPath(); ctx.arc(sx, sy, S * 0.42, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = ctx.fillStyle = rgba((on ? 0.95 : cold ? 0.18 : 0.55) * a);
+      shape(p.shape, sx, sy, S * 0.22, on);
+    }
+    // ── la pista: una lápida grabada, para mirar (no para pisar)
+    if (w.clues.length) {
+      const a = Math.max(...w.clues.map(c => cellA(c.x, c.y)));
+      if (a > 0.01) {
+        const c0 = w.clues[0], left = toX(c0.x) - S * 0.42, top = toY(c0.y) - S * 0.38;
+        const pw = S * (w.clues.length - 0.16);
+        ctx.strokeStyle = rgba(0.55 * a); ctx.strokeRect(left, top, pw, S * 0.76);
+        ctx.strokeRect(left + 3, top + 3, pw - 6, S * 0.76 - 6);
+        for (const c of w.clues) {
+          const ca = cellA(c.x, c.y), sx = toX(c.x), sy = toY(c.y);
+          ctx.strokeStyle = ctx.fillStyle = rgba(0.7 * ca);
+          shape(c.shape, sx, sy - S * 0.08, S * 0.13, false);
+          for (let k = 0; k < c.n; k++) { ctx.beginPath(); ctx.arc(sx + (k - (c.n - 1) / 2) * S * 0.12, sy + S * 0.2, S * 0.028, 0, Math.PI * 2); ctx.fill(); }
+        }
+      }
+    }
+    // ── carteles (poste y placa)
+    for (const s of w.signs) {
+      const a = cellA(s.x, s.y); if (a < 0.01) continue;
+      const sx = toX(s.x), sy = toY(s.y);
+      ctx.strokeStyle = rgba(0.7 * a);
+      ctx.beginPath(); ctx.moveTo(sx, sy + S * 0.4); ctx.lineTo(sx, sy - S * 0.05); ctx.stroke();
+      ctx.fillStyle = "#000"; ctx.fillRect(sx - S * 0.28, sy - S * 0.36, S * 0.56, S * 0.32);
+      ctx.strokeRect(sx - S * 0.28, sy - S * 0.36, S * 0.56, S * 0.32);
+      ctx.beginPath(); ctx.moveTo(sx - S * 0.17, sy - S * 0.24); ctx.lineTo(sx + S * 0.17, sy - S * 0.24); ctx.moveTo(sx - S * 0.17, sy - S * 0.15); ctx.lineTo(sx + S * 0.1, sy - S * 0.15); ctx.stroke();
+    }
+    // ── meta
+    if (w.goal) {
+      const a = Math.max(cellA(w.goal.x, w.goal.y), glowA(w.goal.x, w.goal.y, 1.2, 0.4));
+      if (a > 0.01) {
+        const sx = toX(w.goal.x), sy = toY(w.goal.y), pr = reduced ? 1 : 1 + 0.1 * Math.sin(t / 400);
+        ctx.strokeStyle = ctx.fillStyle = rgba(0.85 * a);
+        ctx.beginPath(); ctx.arc(sx, sy, S * 0.3 * pr, 0, Math.PI * 2); won ? ctx.fill() : ctx.stroke();
+      }
+    }
+    // ── sombras
+    for (const e of w.enemies) {
+      const v = vis(e.x, e.y); if (v < 0.08) continue;
+      const sx = toX(e.x), sy = toY(e.y);
+      ctx.beginPath();
+      for (let k = 0; k < 12; k++) {
+        const ang = (k / 12) * Math.PI * 2, j = reduced ? 0 : Math.sin(t / 45 + k * 7.3) * 0.05, r = S * (0.27 + j);
+        k ? ctx.lineTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r) : ctx.moveTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r);
+      }
+      ctx.closePath(); ctx.fillStyle = "#000"; ctx.fill();
+      ctx.strokeStyle = rgba(0.85 * v); ctx.stroke();
+    }
+    // ── cazadores: en la oscuridad solo se ven los ojos
+    if (w === lab) for (const hn of hunters) {
+      const appear = clamp01(1 - (huntFrom - t) / HUNT_GRACE) * (hn.trapped ? 0.35 : 1), v = vis(hn.x, hn.y) * appear, eyes = Math.max(v, glowA(hn.x, hn.y, 2.6, 0.9)) * appear;
+      if (eyes < 0.02) continue;
+      const sx = toX(hn.x), sy = toY(hn.y);
+      if (v > 0.05) {
+        ctx.beginPath();
+        for (let k = 0; k < 16; k++) {
+          const ang = (k / 16) * Math.PI * 2, j = reduced ? 0 : Math.sin(t / 30 + k * 5.1) * 0.06, r = S * ((k % 2 ? 0.26 : 0.38) + j);
+          k ? ctx.lineTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r) : ctx.moveTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r);
+        }
+        ctx.closePath(); ctx.fillStyle = "#000"; ctx.fill(); ctx.strokeStyle = rgba(0.9 * v); ctx.stroke();
+      }
+      const blink = reduced ? 1 : (Math.sin(t / 900 + hn.sx) > 0.96 ? 0.1 : 1);
+      ctx.fillStyle = rgba(eyes * blink);
+      for (const o of [-1, 1]) { ctx.beginPath(); ctx.ellipse(sx + o * S * 0.1, sy - S * 0.04, S * 0.05, S * 0.03, 0, 0, Math.PI * 2); ctx.fill(); }
+    }
+    // ── fantasmas de lo que falta
+    for (let i = ghosts.length - 1; i >= 0; i--) {
+      const g = ghosts[i], k = (t - g.at) / 1600;
+      if (k >= 1) { ghosts.splice(i, 1); continue; }
+      if (g.w !== w) continue;
+      const ga = 1 - k * k, gx = toX(g.x), gy = toY(g.y);
+      ctx.fillStyle = `rgba(0,0,0,${0.92 * ga})`; ctx.fillRect(gx - S * 0.46, gy - S * 0.46, S * 0.92, S * 0.92);
+      ctx.strokeStyle = rgba(0.5 * ga); ctx.strokeRect(gx - S * 0.46, gy - S * 0.46, S * 0.92, S * 0.92);
+      icon(g.need, gx, gy, S * 0.24, 0.95 * ga, true);
+    }
+    // ── objeto recién tomado
+    for (let i = pickups.length - 1; i >= 0; i--) {
+      const p = pickups[i], k = (t - p.t) / 900;
+      if (k >= 1) { pickups.splice(i, 1); continue; }
+      if (p.w !== w) continue;
+      const e = 1 - (1 - k) ** 3;
+      icon(p.kind, toX(p.x), toY(p.y) - e * S * 1.2, S * (0.22 + e * 0.12), 1 - k, false);
+    }
+    // ── el punto
+    {
+      const nudge = climb ? clamp01((t - climb.start) / CLIMB_MS) * 0.25 : 0;
+      const px = toX(dp.x + (climb ? (climb.x - P.x) * nudge : 0)), py = toY(dp.y + (climb ? (climb.y - P.y) * nudge : 0));
+      const pulse = awake ? 1 : (reduced ? 1 : 0.8 + 0.2 * Math.sin(t / 700));
+      // la visión se agranda al tomar una chispa
+      if (sparkFx && t - sparkFx.t < 1600) {
+        const k = (t - sparkFx.t) / 1600, ease = 1 - (1 - k) ** 3, reach = S * (sparkFx.to + 0.45);
+        const fl = ctx.createRadialGradient(px, py, 0, px, py, reach * 1.15);
+        fl.addColorStop(0, rgba(0.3 * (1 - k))); fl.addColorStop(0.75, rgba(0.12 * (1 - k))); fl.addColorStop(1, rgba(0));
+        ctx.fillStyle = fl; ctx.fillRect(px - reach * 1.2, py - reach * 1.2, reach * 2.4, reach * 2.4);
+        ctx.save(); ctx.lineWidth = 1.5;
+        for (const lag of [0, 0.18]) {
+          const kk = clamp01((k - lag) / (1 - lag)); if (kk <= 0) continue;
+          ctx.strokeStyle = rgba(0.85 * (1 - kk));
+          ctx.beginPath(); ctx.arc(px, py, S * 0.15 + (reach - S * 0.15) * (1 - (1 - kk) ** 3), 0, Math.PI * 2); ctx.stroke();
+        }
+        if (k > 0.35) { ctx.setLineDash([4, 6]); ctx.strokeStyle = rgba(0.4 * (1 - k)); ctx.beginPath(); ctx.arc(px, py, reach * (0.9 + 0.1 * ease), 0, Math.PI * 2); ctx.stroke(); }
+        ctx.restore();
+      }
+      if (awake) {
+        const g = ctx.createRadialGradient(px, py, 0, px, py, S * 0.6);
+        g.addColorStop(0, rgba(0.2)); g.addColorStop(1, rgba(0));
+        ctx.fillStyle = g; ctx.fillRect(px - S, py - S, S * 2, S * 2);
+      }
+      ctx.fillStyle = rgba(pulse);
+      ctx.beginPath(); ctx.arc(px, py, Math.max(2.5, S * 0.09), 0, Math.PI * 2); ctx.fill();
+      if (shield > 0) {
+        ctx.strokeStyle = rgba(0.45 + (reduced ? 0 : 0.15 * Math.sin(t / 300)));
+        ctx.beginPath(); ctx.arc(px, py, S * 0.24, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (powers.has("sombrero")) icon("sombrero", px, py - S * 0.2, S * 0.1, 0.9, false);
+      if (stuck && stuckSince && t - stuckSince > 200) {
+        const k = clamp01((t - stuckSince - 200) / 1400);
+        ctx.save(); ctx.setLineDash([2, 5]); ctx.strokeStyle = rgba(0.9); ctx.beginPath(); ctx.arc(px, py, S * 0.36, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
+      if (lift && t - lift.start > 300) {
+        const k = clamp01((t - lift.start - 300) / (LIFT_MS - 300));
+        ctx.save(); ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(0.9); ctx.beginPath(); ctx.arc(px, py, S * 0.34, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
+      if (climb) {
+        const k = clamp01((t - climb.start) / CLIMB_MS);
+        ctx.strokeStyle = rgba(0.9); ctx.beginPath(); ctx.arc(px, py, S * 0.32, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+      }
+    }
+    // ── texto de carteles cercanos
+    for (const s of w.signs) {
+      const near = awake && Math.abs(s.x - P.x) + Math.abs(s.y - P.y) <= 1 && !trans;
+      s.near += ((near ? 1 : 0) - s.near) * 0.15;
+      if (s.near < 0.02 || !s.text) continue;
+      const read = powers.has("libro");
+      const size = Math.max(16, Math.min(22, S * 0.36));
+      ctx.font = `italic 500 ${size}px ${SERIF}`;
+      const maxW = Math.min(vw - 48, 300);
+      const lines = read ? wrap(s.text, maxW) : [s.text];
+      const lh = size * 1.25;
+      const boxW = read ? Math.min(maxW, Math.max(...lines.map(l => ctx.measureText(l).width))) + 28 : Math.min(maxW + 28, s.text.length * size * 0.46 + 28);
+      const boxH = lines.length * lh + 20;
+      let bx = toX(s.x) - boxW / 2, by = toY(s.y) - S * 0.55 - boxH;
+      bx = Math.max(16, Math.min(vw - 16 - boxW, bx)); by = Math.max(16 + safe("Top"), by);
+      ctx.globalAlpha = s.near;
+      ctx.fillStyle = "rgba(0,0,0,0.9)"; ctx.fillRect(bx, by, boxW, boxH);
+      ctx.strokeStyle = rgba(0.45); ctx.lineWidth = 1; ctx.strokeRect(bx + 0.5, by + 0.5, boxW - 1, boxH - 1);
+      if (read) {
+        if (s.seenAt < 0) s.seenAt = t;
+        const reveal = clamp01((t - s.seenAt) / 900);
+        ctx.fillStyle = rgba(0.95); ctx.textBaseline = "middle"; ctx.textAlign = "center";
+        let shown = Math.floor(s.text.length * reveal), used = 0;
+        lines.forEach((l, i) => {
+          const part = l.slice(0, Math.max(0, shown - used)); used += l.length + 1;
+          ctx.fillText(part.padEnd(l.length, " "), bx + boxW / 2, by + 10 + lh * (i + 0.5));
+        });
+        ctx.textAlign = "start";
+      } else {
+        const txt = s.text.length > 34 ? s.text.slice(0, 34) : s.text;
+        scribble(txt, bx + boxW / 2, by + boxH / 2, size, 0.7);
+      }
+      ctx.globalAlpha = 1; ctx.lineWidth = lw;
+    }
+    // ── lo que llevás (abajo) y lo que sos (arriba a la derecha)
+    {
+      const items = Object.entries(inv).filter(([, n]) => n > 0);
+      const by = vh - 30 - safe("Bottom");
+      ctx.font = `600 12px system-ui, sans-serif`; ctx.textBaseline = "middle";
+      items.forEach(([k, n], i) => {
+        const x = vw / 2 + (i - (items.length - 1) / 2) * 52;
+        icon(k, x - (n > 1 ? 7 : 0), by, 10, 0.75, false);
+        if (n > 1) { ctx.fillStyle = rgba(0.75); ctx.fillText("×" + n, x + 8, by + 1); }
+      });
+      const pw = POWERS.filter(p => powers.has(p)), ty = 26 + safe("Top");
+      pw.forEach((p, i) => icon(p, vw - 26 - i * 34, ty, 10, p === "escudo" && shield === 0 ? 0.3 : 0.75, false));
+    }
+    if (badge) {
+      const bx = 26, by = 26 + safe("Top");
+      ctx.strokeStyle = ctx.fillStyle = rgba(0.7); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(bx, by, 9, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx, by, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+    if (won && !endGone && t - wonAt > 4600) {
+      const k = clamp01((t - wonAt - 4600) / 1500);
+      const secs = Math.round((wonAt - startAt) / 1000), mm = Math.floor(secs / 60), ss = String(secs % 60).padStart(2, "0");
+      const worlds = [city, lab, cajas], all = worlds.flatMap(w2 => w2.items);
+      const sparks = all.filter(i => i.kind === "chispa"), objs = all.filter(i => i.kind !== "chispa");
+      const signs = worlds.flatMap(w2 => w2.signs).filter(sg => sg.text);
+      const puzzles = [[...city.doors.values()].find(d => d.kind === "reja").open, [...city.doors.values()].find(d => d.kind === "vitrina").open, stats.cajas1, [...cajas.doors.values()].find(d => d.need === "pares").open, stats.hielo, stats.escaped];
+      const lines = [
+        ["Tiempo", `${mm}:${ss}`],
+        ["Objetos encontrados", `${objs.filter(i => i.taken).length} de ${objs.length}`],
+        ["Chispas", `${sparks.filter(i => i.taken).length} de ${sparks.length}`],
+        ["Acertijos resueltos", `${puzzles.filter(Boolean).length} de ${puzzles.length}`],
+        ["Carteles leídos", `${signs.filter(sg => sg.seenAt >= 0).length} de ${signs.length}`],
+        ["Objetos creados", String(stats.crafted)],
+        ["Tablas colocadas", String(stats.built)],
+        ["Cazadores encerrados", `${stats.trapped} de ${HUNT_SPAWNS.length}`],
+        ["Golpes recibidos", String(stats.hits)]
+      ];
+      ctx.fillStyle = `rgba(0,0,0,${0.82 * k})`; ctx.fillRect(0, 0, vw, vh);
+      const big = Math.max(38, Math.min(76, vw / 10)), lh = 21, top = vh / 2 - (big * 1.6 + lines.length * lh) / 2;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = rgba(k);
+      ctx.font = `italic 500 ${big}px ${SERIF}`; ctx.fillText("Llegaste.", vw / 2, top + big * 0.4);
+      ctx.font = `italic 500 ${Math.round(big * 0.34)}px ${SERIF}`; ctx.fillStyle = rgba(0.85 * k);
+      ctx.fillText("Felicitaciones: terminaste el prototipo.", vw / 2, top + big * 1.05);
+      ctx.font = `500 13px system-ui, sans-serif`; ctx.textBaseline = "middle";
+      lines.forEach(([label, val], i) => {
+        const y = top + big * 1.6 + 12 + i * lh;
+        ctx.textAlign = "right"; ctx.fillStyle = rgba(0.55 * k); ctx.fillText(label, vw / 2 - 10, y);
+        ctx.textAlign = "left"; ctx.fillStyle = rgba(0.9 * k); ctx.fillText(val, vw / 2 + 10, y);
+      });
+      ctx.textAlign = "center";
+      if (t - wonAt > 9000) { ctx.fillStyle = rgba(0.4 * k * (reduced ? 1 : 0.6 + 0.4 * Math.sin(t / 500))); ctx.fillText("Podés seguir recorriendo la ciudad", vw / 2, vh - 48 - safe("Bottom")); }
+      ctx.textAlign = "start";
+      if (!endShown && k >= 1) endShown = true;
+    }
+    if (flash > 0) { ctx.fillStyle = rgba(flash); ctx.fillRect(0, 0, vw, vh); }
+    if (trans) {
+      const e = t - trans.start, a = e < 450 ? e / 450 : 1 - (e - 450) / 650;
+      ctx.fillStyle = `rgba(0,0,0,${clamp01(a)})`; ctx.fillRect(0, 0, vw, vh);
+    }
+  };
+
+  // ═════════════════ Sonidos que dicen algo ═════════════════
+  const nearest = (list, filter) => { let m = Infinity; for (const c of list) if (!filter || filter(c)) m = Math.min(m, Math.hypot(c.x - dp.x, c.y - dp.y)); return m; };
+  const prox = (d, range) => clamp01(1 - d / range);
+  const soundscape = t => {
+    if (!layers) return;
+    const now = ac.currentTime, quiet = trans ? 0 : 1;
+    const w = cur;
+    // roto: puentes rotos cercanos
+    let dRoto = Infinity;
+    for (let y = 0; y < w.H; y++) for (let x = 0; x < w.W; x++) if (w.grid[y][x] === "b") dRoto = Math.min(dRoto, Math.hypot(x - dp.x, y - dp.y));
+    const pr = prox(dRoto, 5) * quiet;
+    layers.roto.gain.setTargetAtTime(pr * (Math.random() < 0.3 ? 0.05 + Math.random() * 0.2 : 0.004), now, 0.01);
+    // tránsito
+    let dCar = Infinity;
+    if (w === city) for (const ln of w.lanes) for (const x of ln.cars) dCar = Math.min(dCar, Math.hypot(x + ln.len / 2 - 0.5 - dp.x, ln.y - dp.y));
+    layers.motor.gain.setTargetAtTime(prox(dCar, 4.5) ** 2 * 0.35 * quiet, now, 0.05);
+    // calma
+    layers.calma.gain.setTargetAtTime(prox(nearest(w.calm), 6) ** 1.5 * 0.022 * quiet, now, 0.3);
+    // alarma: "no es por aquí"
+    const pa = prox(nearest(w.alarm), w === lab ? 2.2 : 3.5) * quiet;
+    if (pa > 0.05 && t > layers.nextAlarm) {
+      layers.alarmHi = !layers.alarmHi;
+      tone(layers.alarmHi ? 880 : 620, 0.16, { type: "square", vol: 0.03 * pa });
+      layers.nextAlarm = t + 420;
+    }
+    // miedo: latido cuando una sombra anda cerca, aunque no la veas
+    if (w === lab && quiet) {
+      const de = nearest(lab.enemies);
+      if (de < 6 && t > layers.nextBeat) {
+        const v = 0.12 * (1 - de / 6);
+        tone(62, 0.16, { to: 40, vol: v }); tone(55, 0.14, { to: 38, vol: v * 0.7, delay: 0.16 });
+        layers.nextBeat = t + 320 + de * 140;
+      }
+    }
+    if (quiet) {
+      // algo te llama: la llave del laberinto, el lente escondido
+      const caller = w.items.find(i => !i.taken && (i.hidden || (w === lab && i.kind === "llave")));
+      if (caller) {
+        const dk = Math.hypot(caller.x - dp.x, caller.y - dp.y);
+        if (dk < 8 && t > layers.nextCall) { const v = 0.035 * (1 - dk / 8); tone(1568, 0.8, { type: "triangle", vol: v }); tone(2093, 0.8, { type: "triangle", vol: v * 0.6, delay: 0.12 }); layers.nextCall = t + 1500; }
+      }
+      // música de persecución: bajo insistente, platillo y un arpegio que sube con la cercanía
+      if (w === lab && labAwake && hunters.some(h => !h.trapped) && t > nextChase) {
+        const dh = nearest(hunters), k = 0.45 + 0.55 * prox(dh, 9), i = chaseStep % 16;
+        const BASS = [55, 0, 55, 0, 65.4, 0, 55, 0, 73.4, 0, 55, 0, 82.4, 0, 73.4, 65.4];
+        if (BASS[i]) tone(BASS[i], 0.12, { type: "sawtooth", vol: 0.055 * k });
+        noiseBurst(0.03, 7000, (i % 2 ? 0.02 : 0.035) * k);
+        if (i % 4 === 0) tone([440, 523, 587, 659].at((chaseStep / 4) % 4), 0.1, { type: "triangle", vol: 0.025 * k });
+        chaseStep++; nextChase = t + 125;
+      }
+      // el reloj de Cajas
+      if (w === cajas && t > (layers.nextTick || 0)) { layers.tock = !layers.tock; tone(layers.tock ? 1900 : 1500, 0.02, { type: "square", vol: 0.008 }); layers.nextTick = t + 500; }
+    }
+  };
+
+  // ═════════════════════════ Bucle ═════════════════════════
+  let last = performance.now();
+  const frame = t => {
+    const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    if (trans) {
+      const e = t - trans.start;
+      if (!trans.switched && e >= 450) {
+        trans.switched = true; cur = trans.to; P.x = dp.x = trans.pos.x; P.y = dp.y = trans.pos.y;
+        setDrone(cur.name);
+        if (cur === lab && !visitedLab) { visitedLab = true; setTimeout(sfx.seal, 300); lab.portal.shakeAt = t + 700; }
+      }
+      if (e >= 1100) trans = null;
+    } else if (slide) {
+      if (t >= slide.next) { const s0 = slide; slide = null; tryMove(s0.dx, s0.dy, t, true); if (slide) slide.next = t + 55; }
+    } else if (awake) {
+      const k = pressed.length ? KEYS[pressed[pressed.length - 1]] : pointerDir();
+      if (stuck && cur === cajas && !k && t - lastMove > 300) { if (!stuckSince) stuckSince = t; else if (t - stuckSince > 1600) resetRoom(t); }
+      else stuckSince = 0;
+      if (!k) climb = null;
+      else if (t - lastMove >= moveMs()) tryMove(k[0], k[1], t);
+      const onBuilt = cur === city && city.grid[P.y][P.x] === "=" && builds.some(b => b.x === P.x && b.y === P.y);
+      if (k || !powers.has("barreta") || !onBuilt || t - lastMove < 250) lift = null;
+      else if (!lift) lift = { x: P.x, y: P.y, start: t };
+      else if (t - lift.start >= LIFT_MS) {
+        city.grid[P.y][P.x] = "~"; builds.splice(builds.findIndex(b => b.x === P.x && b.y === P.y), 1);
+        inv.tabla++; pickups.push({ kind: "tabla", x: P.x, y: P.y, t, w: city }); sfx.lift();
+        P.x = prev.x; P.y = prev.y; lift = null; lastMove = t;
+      }
+    }
+    if (hideAt && t >= hideAt) { flipped.forEach(c => { c.state = "down"; }); flipped = []; hideAt = 0; }
+    {
+      const ease = k => k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      zoomE = won && cur === city ? ease(clamp01((t - wonAt) / 3000)) * (1 - (endGone ? ease(clamp01((t - endGoneAt) / 1200)) : 0)) : 0;
+    }
+    enemyClock += dt * 1000;
+    while (enemyClock >= ENEMY_MS) { enemyClock -= ENEMY_MS; stepEnemies(t); }
+    hunterClock += dt * 1000;
+    while (hunterClock >= HUNT_MS) { hunterClock -= HUNT_MS; stepHunters(t); }
+    stepTraffic(dt, t);
+    let tr = targetR;
+    if (t < dimUntil) tr = Math.min(tr, 0.35);
+    if ((t < revealUntil || zoomE > 0.02) && cur === city) tr = 120;
+    const growing = sparkFx && t - sparkFx.t < 1600;
+    R += (tr - R) * Math.min(1, dt * (t < revealUntil ? 0.9 : growing ? 1.6 : 3));
+    const f = Math.min(1, dt * 16);
+    dp.x += (P.x - dp.x) * f; dp.y += (P.y - dp.y) * f;
+    flash = Math.max(0, flash - dt * 1.4);
+    soundscape(t);
+    draw(t);
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  cv.focus();
+
+  console.log("%c·", "font-size:28px;color:#f2f1ec;background:#000;padding:0 14px");
+  console.log("No todo lo que existe está dentro del mapa.");
+})();
+</script>
