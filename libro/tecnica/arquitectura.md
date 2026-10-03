@@ -14,7 +14,7 @@
 
 - Una sola página web con dibujo en canvas y sonido generado con Web Audio.
 - Progreso solo en el navegador.
-- Desde el 2 oct 2026 el juego se publica en Vercel: cada cambio en la rama principal del repositorio sale publicado solo. Se publica únicamente el juego; el libro y las herramientas no quedan a la vista, para no revelar soluciones.
+- Desde el 2 oct 2026 el juego y este libro se publican en Vercel: cada cambio en la rama principal del repositorio sale publicado solo. El juego está en la raíz del sitio y el libro en /libro. Por ahora el sitio lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
 - Desde el 2 oct 2026 el código vive en un repositorio y se trabaja con Claude Code: el juego, este libro en Markdown, los solvers de los cuartos y las pruebas automáticas.
 - Cada mapa de la ciudad se valida con un BFS por etapas (`npm run validar:ciudad`): cada tramo de la progresión se alcanza con lo que el jugador tiene en ese momento, y ninguna casilla queda aislada.
 

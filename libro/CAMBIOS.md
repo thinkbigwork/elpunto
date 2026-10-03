@@ -1,6 +1,16 @@
 # Registro de cambios
 
-Versión actual del libro: **0.18** (2026-10-02).
+Versión actual del libro: **0.19** (2026-10-02).
+
+## 0.19 · El libro también se publica
+
+_2026-10-02_
+
+- Por ahora el sitio lo ven solo colaboradores, así que se publica todo: el juego en la raíz y este libro en /libro.
+- El libro web lee sus páginas de un archivo generado desde el repositorio en cada publicación; ya no depende de la base de datos de claude.ai.
+- El juego y el libro web traen su propia cabecera (codificación y vista para celulares), para verse igual fuera de claude.ai.
+
+Páginas: [arquitectura](tecnica/arquitectura.md), [decisiones](produccion/decisiones.md)
 
 ## 0.18 · El juego se publica en Vercel
 

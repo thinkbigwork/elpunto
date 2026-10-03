@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Libro de El Punto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -146,7 +150,7 @@ main { min-width: 0; padding: 36px 48px 80px; }
     <div class="state" id="state">
       <div class="dot"></div>
       <p class="page-title">Cargando el libro</p>
-      <p>Las páginas se leen de la base de datos del libro. Si no aparecen en unos segundos, iniciá sesión en claude.ai con una cuenta que tenga acceso.</p>
+      <p>Si las páginas no aparecen en unos segundos, recargá.</p>
     </div>
   </main>
   <aside class="toc" id="toc" aria-label="En esta página"></aside>
@@ -287,7 +291,17 @@ main { min-width: 0; padding: 36px 48px 80px; }
   const showError = msg => { $("main").innerHTML = `<div class="state"><div class="dot"></div><p class="page-title">No se pudo abrir el libro</p><p>${esc(msg)}</p></div>`; $("side-meta").textContent = ""; };
   (async () => {
     const db = await (window.claude?.use ? window.claude.use("db") : Promise.resolve(null));
-    if (!db) return showError("Esta vista no puede leer la base de datos del libro. Abrilo desde claude.ai con una sesión iniciada y acceso al artefacto.");
+    if (!db) {
+      // fuera de claude.ai (por ejemplo, en Vercel): el libro viene en un JSON generado desde libro/
+      try {
+        const r = await fetch("/libro/datos/libro.json", { cache: "no-cache" });
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        S.cats = d.categories.sort((a, b) => a.order - b.order); S.pages = d.pages; S.log = d.changelog.sort((a, b) => b.order - a.order); S.meta = d.meta;
+        S.ready.cats = S.ready.pages = true; renderPage();
+      } catch (e) { showError("No se pudieron cargar las páginas del libro."); }
+      return;
+    }
     const fail = e => { if (e && (e.code === "revoked" || e.code === "not_granted")) showError("El acceso a la base de datos se interrumpió. Volvé a abrir el libro."); };
     db.collection("categories").orderBy("order").onSnapshot(s => { S.cats = s.docs.map(d => ({ id: d.id, ...d.data() })); S.ready.cats = true; renderPage(); }, fail);
     db.collection("pages").onSnapshot(s => { S.pages = s.docs.map(d => ({ id: d.id, ...d.data() })); S.ready.pages = true; renderPage(); }, fail);

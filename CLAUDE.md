@@ -31,7 +31,7 @@ Cada cambio al juego o al diseño, en el mismo commit:
 4. Sumar una entrada arriba de todo en `libro/CAMBIOS.md`, subiendo la versión (0.16 → 0.17…), con el mismo formato que las anteriores (título, fecha en itálica, viñetas y línea "Páginas:").
 5. Cada página empieza por su conclusión, en negrita.
 
-Si la persona lo pide, actualizar también la versión web del libro (ver "Libro web").
+El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, actualizar también el artefacto del libro web (ver "Libro web").
 
 ## Cómo está hecho el juego
 
@@ -52,7 +52,7 @@ Si la persona lo pide, actualizar también la versión web del libro (ver "Libro
 
 ## Publicar
 
-- El juego público está en Vercel: cada push a `main` lo publica. `vercel.json` copia solo `juego/el-punto.html` como `index.html`; nunca publicar el libro, las herramientas ni las pruebas (revelan soluciones).
+- El sitio está en Vercel: cada push a `main` lo publica. `vercel.json` arma `publico/` con el juego como `index.html` y el libro web en `/libro` (lee `libro/datos/libro.json`, generado en la publicación). Por ahora lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
 - Versión de prueba privada, como artefacto de claude.ai: https://claude.ai/artifact/Wk6usAWzg5EEaXYzbTei7Q
 - El libro web: https://claude.ai/artifact/4eCjAgvK4WDtFqugZiZtA7
 - Si hay herramienta para publicar artefactos en la sesión, republicar en esos mismos links. Si no, el juego se prueba abriendo `juego/el-punto.html` en el navegador.

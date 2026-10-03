@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>El Punto</title>
 <!-- El punto no está solo. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -9,6 +13,10 @@
   --vacio: #000000;
   --luz: #f2f1ec;
   color-scheme: dark;
+  /* margen de la muesca en celulares: el juego lo lee para ubicar lo que llevás */
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 html, body { height: 100%; margin: 0; background: var(--vacio); color: var(--luz); overflow: hidden; }
 canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }

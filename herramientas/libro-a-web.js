@@ -1,11 +1,16 @@
 // Convierte el libro en Markdown (libro/) en los JSON que lee la versión web del libro (libro-web/).
 // Uso: node herramientas/libro-a-web.js libro salida-web
 // Después, Claude sube los JSON a la base de datos del artefacto web (colecciones categories, pages, changelog, meta).
+// También deja todo junto en libro.json, que es lo que lee la página cuando se publica fuera de claude.ai (Vercel).
 const fs = require('fs'), path = require('path');
 const [src, out] = process.argv.slice(2);
 const sum = fs.readFileSync(path.join(src, 'SUMMARY.md'), 'utf8');
 const back = b => b.replace(/\]\((?:\.\.\/)?CAMBIOS\.md\)/g, '](#registro-de-cambios)').replace(/\]\((?:\.\.\/)?[a-z0-9-]+\/([a-z0-9-]+)\.md\)/g, '](#$1)');
-const w = (dir, id, obj) => { fs.mkdirSync(path.join(out, dir), { recursive: true }); fs.writeFileSync(path.join(out, dir, id + '.json'), JSON.stringify(obj)); };
+const todo = { categories: [], pages: [], changelog: [], meta: null };
+const w = (dir, id, obj) => {
+  fs.mkdirSync(path.join(out, dir), { recursive: true }); fs.writeFileSync(path.join(out, dir, id + '.json'), JSON.stringify(obj));
+  if (dir === 'meta') todo.meta = obj; else todo[dir].push({ id, ...obj });
+};
 let catOrder = 0, cur = null, n = 0;
 const titles = {};
 for (const line of sum.split('\n')) {
@@ -34,4 +39,5 @@ secs.forEach((s, i) => {
   const order = secs.length - i;
   w('changelog', 'c' + String(order).padStart(3, '0'), { order, date, version, title, items, pages });
 });
+fs.writeFileSync(path.join(out, 'libro.json'), JSON.stringify(todo));
 console.log(catOrder, 'categorías,', n, 'páginas,', secs.length, 'cambios →', out);
