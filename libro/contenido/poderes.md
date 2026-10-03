@@ -5,7 +5,7 @@
 | Poder | Qué da | Estado |
 | --- | --- | --- |
 | Libro | Leer carteles; una segunda lectura revela nombres reales | En prototipo |
-| Zapatillas | Dos baldosas fijas en la plaza del sur: las flechas hacia un lado dan más velocidad, las del otro lado la devuelven a normal. Nunca desaparecen | En prototipo |
+| Zapatillas | Dos baldosas fijas en una calle del sur: las flechas hacia un lado dan más velocidad, las del otro lado la devuelven a normal. Nunca desaparecen | En prototipo |
 | Escudo | Absorbe un golpe; se recarga en refugios | En prototipo |
 | Sombrero | Ver lo oculto y atravesar paredes falsas; indispensable para llegar a Cajas. Está en una vitrina que se abre repitiendo una melodía | En prototipo |
 | Barreta | Levantar una tabla mal puesta: quedarse quieto sobre ella | En prototipo |

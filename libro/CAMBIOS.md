@@ -1,6 +1,17 @@
 # Registro de cambios
 
-Versión actual del libro: **0.19** (2026-10-02).
+Versión actual del libro: **0.20** (2026-10-02).
+
+## 0.20 · Objetos repartidos por toda la ciudad
+
+_2026-10-02_
+
+- Junto al inicio quedan solo la casa (el final), un cartel, un pasaje y un patio vacío.
+- El refugio, con la biblioteca y el crisol, se muda al extremo este. Un lente pasa a un callejón del centro del sur y la tabla del foso al extremo este: conseguir la lectura obliga a recorrer el sur de punta a punta.
+- Tablas, barreta, escudo y chispas pasan a callejones y patios repartidos entre la avenida, el río y el barrio del noreste.
+- Las manzanas suman 7 callejones, 5 patios y 3 pasajes: algunos esconden algo y otros no.
+
+Páginas: [mapa-global](mundo/mapa-global.md), [objetos](contenido/objetos.md), [poderes](contenido/poderes.md), [decisiones](produccion/decisiones.md)
 
 ## 0.19 · El libro también se publica
 
