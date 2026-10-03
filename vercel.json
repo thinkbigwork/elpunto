@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "echo sin dependencias",
-  "buildCommand": "rm -rf publico && mkdir -p publico/libro publico/editor publico/herramientas && cp juego/el-punto.html publico/index.html && cp libro-web/el-punto-gdd.html publico/libro/index.html && node herramientas/libro-a-web.js libro publico/libro/datos && cp editor/editor.html publico/editor/index.html && cp herramientas/validar-ciudad.js publico/herramientas/",
+  "buildCommand": "node herramientas/armar-sitio.js",
   "outputDirectory": "publico"
 }

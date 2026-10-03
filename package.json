@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node pruebas/regresion.js",
     "validar:ciudad": "node herramientas/validar-ciudad.js",
-    "libro:web": "node herramientas/libro-a-web.js libro libro-web/datos"
+    "libro:web": "node herramientas/libro-a-web.js libro libro-web/datos",
+    "sitio": "node herramientas/armar-sitio.js"
   },
   "devDependencies": {
     "playwright": "^1.63.0"
