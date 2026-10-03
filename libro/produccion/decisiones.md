@@ -50,6 +50,8 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| Editor de mapas solo para el equipo, en /editor; abrirlo a jugadores queda para más adelante | 2 oct 2026 |
+| El juego acepta un mapa de prueba del editor (?prueba), solo en el navegador de quien lo prueba | 2 oct 2026 |
 | Objetos repartidos por toda la ciudad; el refugio pasa al extremo este; manzanas con callejones, patios y pasajes | 2 oct 2026 |
 | El juego se publica en Vercel | 2 oct 2026 |
 | El libro también se publica, mientras el sitio lo vean solo colaboradores | 2 oct 2026 |

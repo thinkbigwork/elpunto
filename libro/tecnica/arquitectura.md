@@ -18,13 +18,24 @@
 - Desde el 2 oct 2026 el código vive en un repositorio y se trabaja con Claude Code: el juego, este libro en Markdown, los solvers de los cuartos y las pruebas automáticas.
 - Cada mapa de la ciudad se valida con un BFS por etapas (`npm run validar:ciudad`): cada tramo de la progresión se alcanza con lo que el jugador tiene en ese momento, y ninguna casilla queda aislada.
 
+## Editor de mapas
+
+En prototipo desde el 2 oct 2026, solo para el equipo, en `/editor` del sitio.
+
+- Lee los mapas del propio juego (ciudad, laberinto y Cajas) y guarda un borrador en el navegador.
+- Se dibuja con lápiz, rectángulo, línea, balde y gotero sobre una paleta con todas las casillas; los carteles se escriben ahí mismo.
+- Valida mientras se dibuja, con el mismo BFS por etapas que usa `npm run validar:ciudad`. En el laberinto y Cajas revisa la forma y avisa de las coordenadas que el código tiene fijas.
+- Muestra un mapa de calor de pasos desde el inicio y la lista de objetos por distancia, para ver si quedaron amontonados.
+- **Probar** abre el juego con el mapa editado (`?prueba`), solo en ese navegador: arranca en el mundo editado, dice "mapa de prueba" y no da la insignia.
+- **Exportar** da el texto del mapa y sus carteles; se aplica al juego en un commit, con las pruebas y el libro.
+- Falta: cambiar el tamaño de un mapa y crear mundos nuevos.
+
 ## Lo que falta decidir
 
 | Pieza | Opciones |
 | --- | --- |
 | Motor | Seguir con código propio o usar un motor web |
 | Servidor | Cuentas, guardado en la nube, tiempo real para jugar de a dos |
-| Editor de niveles | Dibujar mapas, ubicar objetos, importar calles reales |
 | Medición | Registrar dónde está cada jugador y cuánto tarda |
 
 ---

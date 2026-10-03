@@ -17,7 +17,8 @@ Juego de descubrimiento y estrategia online. Empieza como un punto blanco en una
 | `libro/CAMBIOS.md` | Registro de cambios: una entrada por paso, la más nueva arriba |
 | `libro-web/` | La página web del libro, que lee sus datos de una base de datos (ver abajo) |
 | `herramientas/solvers.js` | Solucionadores para validar cuartos: `sokoban(filas)` y `ice(filas)` |
-| `herramientas/validar-ciudad.js` | BFS por etapas sobre la ciudad del juego (`npm run validar:ciudad`) |
+| `herramientas/validar-ciudad.js` | BFS por etapas sobre la ciudad (`npm run validar:ciudad`). Lo usa también el editor en el navegador: mantener el envoltorio que lo hace funcionar en los dos lados |
+| `editor/editor.html` | Editor de mapas del equipo (en `/editor`): dibuja, valida, prueba (`?prueba`) y exporta |
 | `herramientas/libro-a-web.js` | Convierte `libro/` en los JSON de la versión web |
 | `pruebas/regresion.js` | Prueba de punta a punta con Playwright (`npm test`) |
 
@@ -41,6 +42,9 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
 - Cazadores: buscan camino con BFS; quedan encerrados si no hay camino hasta el jugador.
 - Visión: radio base 1, cada chispa suma 0,5 (5 chispas → 3,5). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
+- Los puntos de regreso se calculan desde el mapa: al salir del laberinto, debajo de la grieta; al volver de Cajas, a la izquierda del portal `Q`.
+- Modo prueba: con `?prueba` el juego reemplaza un mundo por el que dejó el editor en `localStorage` (`punto.prueba`). Es parte del juego, no un gancho de prueba como `window.__t`.
+- Si llega un mapa exportado del editor: reemplazar el arreglo y las claves de `CARTELES` de ese mundo, correr `npm run validar:ciudad` (si es la ciudad) y `npm test`, y actualizar el libro.
 - Textos de carteles en el objeto `CARTELES`, por mundo y coordenada `"x,y"`. Si se mueve un mapa, hay que mover sus claves.
 
 ## Validar antes de dar algo por terminado
@@ -52,7 +56,7 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 
 ## Publicar
 
-- El sitio está en Vercel (https://elpunto-mu.vercel.app, libro en /libro): cada push a `main` lo publica. `vercel.json` arma `publico/` con el juego como `index.html` y el libro web en `/libro` (lee `libro/datos/libro.json`, generado en la publicación). Por ahora lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
+- El sitio está en Vercel (https://elpunto-mu.vercel.app, libro en /libro): cada push a `main` lo publica. `vercel.json` arma `publico/` con el juego como `index.html`, el libro web en `/libro` y el editor en `/editor` (lee `libro/datos/libro.json`, generado en la publicación). Por ahora lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
 - Versión de prueba privada, como artefacto de claude.ai: https://claude.ai/artifact/Wk6usAWzg5EEaXYzbTei7Q
 - El libro web: https://claude.ai/artifact/4eCjAgvK4WDtFqugZiZtA7
 - Si hay herramienta para publicar artefactos en la sesión, republicar en esos mismos links. Si no, el juego se prueba abriendo `juego/el-punto.html` en el navegador.
@@ -66,5 +70,5 @@ La página `libro-web/el-punto-gdd.html` lee de la base de datos de su artefacto
 
 ## Pendientes conocidos
 
-- Diseñador de mapas: falta definir si es solo para el equipo o también para los jugadores.
+- Editor de mapas: por ahora solo para el equipo. Falta cambiar el tamaño de un mapa y crear mundos nuevos.
 - Lupa, brújula y mapa quedan para próximos capítulos.

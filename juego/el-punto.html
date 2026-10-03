@@ -165,9 +165,16 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     w.seen = new Float64Array(w.W * w.H).fill(-1e9);
     return w;
   };
-  const city = parse("ciudad", CIUDAD);
-  const lab = parse("laberinto", LABERINTO);
-  const cajas = parse("cajas", CAJAS);
+  // modo prueba: el editor de mapas deja un mundo en este navegador y abre el juego con ?prueba
+  const PRUEBA = (() => {
+    if (!/[?&]prueba\b/.test(location.search)) return null;
+    try { const p = JSON.parse(localStorage.getItem("punto.prueba")); return p && p.mundo && Array.isArray(p.filas) ? p : null; } catch (e) { return null; }
+  })();
+  if (PRUEBA) CARTELES[PRUEBA.mundo] = PRUEBA.carteles || {};
+  const mapa = (name, rows) => parse(name, PRUEBA && PRUEBA.mundo === name ? PRUEBA.filas : rows);
+  const city = mapa("ciudad", CIUDAD);
+  const lab = mapa("laberinto", LABERINTO);
+  const cajas = mapa("cajas", CAJAS);
   cajas.lit = true;
   lab.enemies.push({ x: 13, y: 13, min: 13, max: 19, d: 1 }, { x: 21, y: 11, min: 15, max: 21, d: -1 });
   city.lanes.push(
@@ -183,7 +190,9 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       if (n === 1) lab.alarm.push({ x, y });
     }
   }
-  const CITY_RETURN = { x: 6, y: 3 }, CAJAS_RETURN = { x: 3, y: 6 };
+  // al salir del laberinto se aparece debajo de la grieta; al volver de Cajas, a la izquierda del portal
+  const CITY_RETURN = (g => ({ x: g.x, y: g.y + 1 }))([...city.doors.values()].find(d => d.kind === "grieta"));
+  const CAJAS_RETURN = { x: city.qportal.x - 1, y: city.qportal.y };
 
   // ═════════════════ Semilla propia de cada jugador ═════════════════
   const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
@@ -209,6 +218,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const LIFT_MS = 1600, BASE_R = 1, SPARK_R = 0.5, ENEMY_MS = 260, MEM_MS = 3500, MEM_A = 0.22, CLIMB_MS = 750;
   let cur = city;
   const P = { x: city.start.x, y: city.start.y };
+  if (PRUEBA && PRUEBA.mundo === "laberinto") { cur = lab; P.x = lab.portal.x; P.y = lab.portal.y; }
+  if (PRUEBA && PRUEBA.mundo === "cajas") { cur = cajas; P.x = cajas.start.x; P.y = cajas.start.y; }
   const dp = { x: P.x, y: P.y };
   const inv = { fragmento: 0, llave: 0, lente: 0, armazon: 0, anteojos: 0, tabla: 0 };
   const powers = new Set();
@@ -471,7 +482,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       const g = doorAt(city, P.x, P.y);
       if (g && g.kind === "grieta" && g.open) teleport(lab, { x: lab.portal.x, y: lab.portal.y }, now);
       if (!won && P.x === city.goal.x && P.y === city.goal.y) {
-        won = true; wonAt = now; badge = true; store("punto.insignia", "1");
+        won = true; wonAt = now; badge = true; if (!PRUEBA) store("punto.insignia", "1");
         revealUntil = now + 9500; targetR += SPARK_R; sfx.win();
       }
     } else if (cur === lab && P.x === lab.portal.x && P.y === lab.portal.y) {
@@ -1180,6 +1191,10 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       });
       const pw = POWERS.filter(p => powers.has(p)), ty = 26 + safe("Top");
       pw.forEach((p, i) => icon(p, vw - 26 - i * 34, ty, 10, p === "escudo" && shield === 0 ? 0.3 : 0.75, false));
+    }
+    if (PRUEBA) {
+      ctx.font = "500 11px system-ui, sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "start";
+      ctx.fillStyle = rgba(0.45); ctx.fillText("mapa de prueba", 16, vh - 16 - safe("Bottom"));
     }
     if (badge) {
       const bx = 26, by = 26 + safe("Top");

@@ -1,6 +1,17 @@
 # Registro de cambios
 
-Versión actual del libro: **0.20** (2026-10-02).
+Versión actual del libro: **0.21** (2026-10-02).
+
+## 0.21 · Editor de mapas
+
+_2026-10-02_
+
+- Nuevo editor de mapas para el equipo, en /editor del sitio: lee los mapas del juego, se dibuja sobre la grilla y se editan los carteles.
+- Valida mientras se dibuja con el mismo BFS por etapas de la ciudad, y muestra un mapa de calor de pasos desde el inicio con los objetos ordenados por distancia.
+- Probar abre el juego con el mapa editado, solo en ese navegador; Exportar da el texto para aplicarlo al juego.
+- El juego calcula los puntos de regreso del laberinto y de Cajas desde el mapa, en lugar de tenerlos fijos.
+
+Páginas: [arquitectura](tecnica/arquitectura.md), [pendientes](produccion/pendientes.md), [decisiones](produccion/decisiones.md)
 
 ## 0.20 · Objetos repartidos por toda la ciudad
 

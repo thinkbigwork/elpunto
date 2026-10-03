@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de mapas · El Punto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Editor de mapas del equipo: paleta a la izquierda, grilla al centro, validación a la derecha. */
+:root {
+  --bg: #0d0d0c; --surface: #141413; --ink: #ecebe6; --muted: #a2a19a; --rule: #2a2a27; --soft: #1c1c1a;
+  --link: #9fb0ff; --ok: #7fcf9a; --bad: #ff8f80; --warn: #f0c36a;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 13px/1.5 var(--font-body); display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+button { font: inherit; color: inherit; background: var(--soft); border: 1px solid var(--rule); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: #4a4a45; }
+button:disabled { opacity: .45; cursor: default; }
+button.on { background: #2b2f45; border-color: var(--link); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--rule); background: var(--surface); }
+.brand { display: flex; align-items: center; gap: 9px; margin-right: 6px; }
+.brand i { width: 22px; height: 22px; border-radius: 5px; background: #f2f1ec; display: grid; place-items: center; }
+.brand i::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #0b0b0a; }
+.brand b { font: italic 500 21px/1 var(--font-display); }
+.brand span { font: 500 11px var(--font-mono); color: var(--muted); letter-spacing: .06em; }
+.group { display: flex; gap: 4px; align-items: center; }
+.sep { width: 1px; align-self: stretch; background: var(--rule); }
+.grow { flex: 1; }
+.badge { font: 500 11px var(--font-mono); color: var(--warn); }
+main { display: grid; grid-template-columns: 236px 1fr 300px; min-height: 0; }
+aside { overflow-y: auto; padding: 14px; border-right: 1px solid var(--rule); background: var(--surface); }
+aside.right { border-right: 0; border-left: 1px solid var(--rule); }
+h2 { font: 500 11px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 16px 0 8px; }
+h2:first-child { margin-top: 0; }
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.tools button { padding: 6px 4px; font-size: 12px; }
+.pal { display: grid; grid-template-columns: 1fr; gap: 2px; }
+.pal button { display: flex; align-items: center; gap: 8px; text-align: left; border-color: transparent; background: transparent; padding: 3px 6px; }
+.pal button.on { background: #2b2f45; border-color: var(--link); }
+.sw { width: 18px; height: 18px; border-radius: 3px; flex: none; display: grid; place-items: center; font: 500 11px var(--font-mono); color: #151513; }
+.pal small { margin-left: auto; font: 400 11px var(--font-mono); color: var(--muted); }
+.stage { position: relative; overflow: auto; min-width: 0; background: #080807; }
+.stage canvas { display: block; margin: 24px; image-rendering: pixelated; cursor: crosshair; touch-action: none; }
+.zoom { position: sticky; left: 12px; bottom: 12px; display: inline-flex; gap: 4px; margin: 0 12px 12px; }
+.info { font: 400 12px var(--font-mono); color: var(--muted); min-height: 38px; }
+.info b { color: var(--ink); font-weight: 500; }
+textarea { width: 100%; background: var(--soft); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 8px; font: 400 13px/1.45 var(--font-body); resize: vertical; }
+.hint { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+.checks { list-style: none; margin: 0; padding: 0; }
+.checks li { display: grid; grid-template-columns: 16px 1fr; gap: 4px; padding: 2px 0; font-size: 12px; }
+.checks li.sec { display: block; font: 500 11px var(--font-mono); color: var(--muted); margin-top: 8px; }
+.checks li.ok::before { content: "✓"; color: var(--ok); }
+.checks li.bad::before { content: "✗"; color: var(--bad); }
+.checks li.warn::before { content: "!"; color: var(--warn); font-weight: 600; }
+.summary { padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 500; }
+.summary.ok { background: rgba(127, 207, 154, .1); color: var(--ok); }
+.summary.bad { background: rgba(255, 143, 128, .1); color: var(--bad); }
+.dist { list-style: none; margin: 0; padding: 0; font: 400 12px var(--font-mono); }
+.dist li { display: flex; gap: 8px; padding: 1px 0; cursor: default; }
+.dist li span:last-child { margin-left: auto; color: var(--muted); }
+dialog { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; width: min(760px, calc(100vw - 32px)); padding: 18px; }
+dialog::backdrop { background: rgba(0, 0, 0, .6); }
+dialog textarea { font: 400 12px/1.4 var(--font-mono); height: 50vh; white-space: pre; }
+dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; align-items: center; }
+.overlay { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 5; text-align: center; padding: 16px; }
+.overlay p { color: var(--muted); max-width: 420px; }
+@media (max-width: 1000px) {
+  body { overflow: auto; }
+  main { grid-template-columns: 1fr; }
+  aside { border: 0; border-bottom: 1px solid var(--rule); }
+  .stage { min-height: 60vh; }
+}
+</style>
+
+<header>
+  <div class="brand"><i aria-hidden="true"></i><b>El Punto</b><span>EDITOR DE MAPAS</span></div>
+  <div class="group" id="mundos" role="group" aria-label="Mundo"></div>
+  <div class="sep"></div>
+  <div class="group">
+    <button id="undo" title="Deshacer (Ctrl+Z)">Deshacer</button>
+    <button id="redo" title="Rehacer (Ctrl+Shift+Z)">Rehacer</button>
+  </div>
+  <button id="heat" title="Pasos desde el inicio (D)">Distancias</button>
+  <span class="badge" id="draft"></span>
+  <div class="grow"></div>
+  <div class="group">
+    <button id="restore" title="Descartar los cambios de este mundo y volver al mapa del juego">Restaurar</button>
+    <button id="export">Exportar</button>
+    <button id="play" title="Abre el juego con este mapa (solo en este navegador)">Probar</button>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <h2>Herramienta</h2>
+    <div class="tools" id="tools"></div>
+    <p class="hint">Clic derecho: tomar la casilla. Mayúsculas + arrastrar: mover la vista.</p>
+    <div id="palette"></div>
+  </aside>
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="zoom"><button id="zout" aria-label="Alejar">−</button><button id="zfit">Ajustar</button><button id="zin" aria-label="Acercar">+</button></div>
+  </div>
+  <aside class="right">
+    <h2>Casilla</h2>
+    <div class="info" id="info">Pasá el mouse por la grilla.</div>
+    <div id="signbox" hidden>
+      <h2>Cartel <span id="signkey"></span></h2>
+      <textarea id="signtext" rows="3" placeholder="Texto del cartel"></textarea>
+      <p class="hint">Se lee al estar al lado del cartel, si ya tenés el libro.</p>
+    </div>
+    <h2>Validación</h2>
+    <div id="checks"></div>
+    <div id="distbox" hidden>
+      <h2>Objetos por distancia</h2>
+      <ul class="dist" id="dist"></ul>
+    </div>
+  </aside>
+</main>
+
+<dialog id="dlg">
+  <h2 style="margin-top:0">Exportar <span id="dlgname"></span></h2>
+  <textarea id="out" readonly spellcheck="false"></textarea>
+  <div class="row">
+    <span class="hint" style="margin-right:auto">Pasáselo a Claude para aplicarlo al juego: lo valida, corre las pruebas y actualiza el libro.</span>
+    <button id="copy">Copiar</button>
+    <button id="download">Descargar</button>
+    <button id="close">Cerrar</button>
+  </div>
+</dialog>
+
+<div class="overlay" id="loading">
+  <div>
+    <p style="font:italic 500 28px var(--font-display);color:var(--ink)">Cargando los mapas del juego</p>
+    <p id="loadmsg">Un momento.</p>
+    <p id="pick" hidden><label><input type="file" id="file" accept=".html"> Elegí <code>juego/el-punto.html</code></label></p>
+  </div>
+</div>
+
+<script src="../herramientas/validar-ciudad.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  // ── Casillas: lo mismo que entiende el constructor de mundos del juego
+  const T = (ch, name, color, group, glyph) => ({ ch, name, color, group, glyph: glyph === undefined ? ch : glyph });
+  const TILES = [
+    T("#", "Muro", "#3a3a40", "Terreno", ""), T(".", "Calle", "#d9d6cc", "Terreno", ""), T(",", "Interior", "#b9b2a2", "Terreno", ""),
+    T("~", "Agua", "#4f86c6", "Terreno", ""), T("b", "Puente roto", "#4f86c6", "Terreno", "b"), T("=", "Puente", "#9c7b4e", "Terreno", "="),
+    T("^", "Borde escalable", "#a77a3c", "Terreno", "^"), T("%", "Pared falsa", "#6b5a8a", "Terreno", "%"), T("R", "Refugio", "#8fc5a6", "Terreno", ""),
+    T("!", "Alarma: no es por aquí", "#d9826b", "Terreno", "!"), T("T", "Cartel", "#a3a3ad", "Terreno", "T"),
+    T("c", "Chispa", "#e0b422", "Objetos"), T("p", "Tabla", "#e0b422", "Objetos"), T("o", "Lente", "#e0b422", "Objetos"),
+    T("O", "Lente escondido (suena)", "#e0b422", "Objetos"), T("a", "Armazón", "#e0b422", "Objetos"), T("l", "Libro", "#e0b422", "Objetos"),
+    T("e", "Escudo", "#e0b422", "Objetos"), T("q", "Barreta", "#e0b422", "Objetos"), T("h", "Sombrero", "#e0b422", "Objetos"),
+    T("f", "Fragmento", "#e0b422", "Objetos"), T("k", "Llave", "#e0b422", "Objetos"), T("z", "Zapatillas (objeto)", "#e0b422", "Objetos"),
+    T("S", "Inicio", "#38b07a", "Puertas y mecanismos"), T("M", "Meta", "#38b07a", "Puertas y mecanismos"),
+    T("H", "Casa (pide la llave)", "#c86fb4", "Puertas y mecanismos"), T("L", "Biblioteca (pide anteojos)", "#c86fb4", "Puertas y mecanismos"),
+    T("E", "Reja de las figuras", "#c86fb4", "Puertas y mecanismos"), T("X", "Grieta (pide el fragmento)", "#c86fb4", "Puertas y mecanismos"),
+    T("1", "Pedestal 1", "#c86fb4", "Puertas y mecanismos"), T("2", "Pedestal 2", "#c86fb4", "Puertas y mecanismos"),
+    T("3", "Pedestal 3", "#c86fb4", "Puertas y mecanismos"), T("4", "Pedestal 4", "#c86fb4", "Puertas y mecanismos"),
+    T("V", "Vitrina con el sombrero", "#c86fb4", "Puertas y mecanismos"), T("m", "Caja de música", "#c86fb4", "Puertas y mecanismos"),
+    T("n", "Baldosa de nota", "#c86fb4", "Puertas y mecanismos"), T("C", "Crisol", "#c86fb4", "Puertas y mecanismos"),
+    T("Q", "Portal de Cajas", "#c86fb4", "Puertas y mecanismos"), T("A", "Portal del laberinto", "#c86fb4", "Puertas y mecanismos"),
+    T("K", "Lápida con la pista (ocupa 4 a la derecha)", "#c86fb4", "Puertas y mecanismos"),
+    T(">", "Baldosa rápida", "#c86fb4", "Puertas y mecanismos"), T("<", "Baldosa normal", "#c86fb4", "Puertas y mecanismos"),
+    T("$", "Caja o bloque (se empuja)", "#c9a27a", "Cajas y laberinto"), T("j", "Carta de memoria", "#c9a27a", "Cajas y laberinto"),
+    T("Z", "Baldosa de reinicio", "#c9a27a", "Cajas y laberinto"), T("P", "Reja de los pares", "#c86fb4", "Cajas y laberinto"),
+    T("i", "Hielo", "#bfe3f2", "Cajas y laberinto", ""), T("r", "Roca", "#7d7d85", "Cajas y laberinto", "r"), T("x", "Umbral", "#cfccc2", "Cajas y laberinto", "·")
+  ];
+  const BY = Object.fromEntries(TILES.map(t => [t.ch, t]));
+  const MUNDOS = [["ciudad", "Ciudad", "CIUDAD"], ["laberinto", "Laberinto", "LABERINTO"], ["cajas", "Cajas", "CAJAS"]];
+  const TOOLS = [["lapiz", "Lápiz", "B"], ["rect", "Rectángulo", "R"], ["linea", "Línea", "L"], ["balde", "Balde", "F"], ["gotero", "Gotero", "I"]];
+
+  // ── Estado
+  let game = null, gameUrl = null;          // mapas tal como están en el juego
+  let docs = {};                            // { mundo: { filas: [[...]], carteles: {} } }
+  let mundo = "ciudad", tool = "lapiz", brush = ".", heat = false, cell = 14, sel = null, hover = null;
+  const undo = { ciudad: [], laberinto: [], cajas: [] }, redo = { ciudad: [], laberinto: [], cajas: [] };
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
+
+  // ── Carga: lee los mapas del propio juego
+  const extract = src => {
+    const arr = name => { const m = src.match(new RegExp("const " + name + " = (\\[[\\s\\S]*?\\]);")); if (!m) throw new Error("no encuentro " + name); return Function("return " + m[1])(); };
+    const cm = src.match(/const CARTELES = (\{[\s\S]*?\n  \});/); if (!cm) throw new Error("no encuentro CARTELES");
+    const carteles = Function("return " + cm[1])();
+    return Object.fromEntries(MUNDOS.map(([id, , c]) => [id, { filas: arr(c), carteles: carteles[id] || {} }]));
+  };
+  const hash = d => { let h = 0; const s = JSON.stringify(d); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return String(h); };
+  const load = async () => {
+    for (const url of ["../index.html", "../juego/el-punto.html"]) {
+      try { const r = await fetch(url, { cache: "no-cache" }); if (!r.ok) continue; const src = await r.text(); if (!src.includes("const CIUDAD")) continue; gameUrl = new URL(url, location.href).href; return start(extract(src)); } catch (e) {}
+    }
+    $("loadmsg").textContent = "No pude leer el juego desde acá (pasa al abrir el archivo directo, sin servidor).";
+    $("pick").hidden = false;
+  };
+  $("file").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; try { start(extract(await f.text())); } catch (err) { $("loadmsg").textContent = "Ese archivo no parece el juego: " + err.message; } });
+
+  const start = g => {
+    game = g;
+    let saved = null; try { saved = JSON.parse(store("punto.editor") || "null"); } catch (e) {}
+    for (const [id] of MUNDOS) {
+      const s = saved && saved[id], base = hash(game[id]);
+      const use = s && s.base === base ? s : null;
+      docs[id] = use ? { filas: use.filas.map(r => r.split("")), carteles: use.carteles, base } : { filas: game[id].filas.map(r => r.split("")), carteles: { ...game[id].carteles }, base };
+      if (s && s.base !== base) docs[id].staleDraft = true;
+    }
+    $("loading").remove();
+    $("play").disabled = !gameUrl; if (!gameUrl) $("play").title = "Para probar, abrí el editor desde el sitio (Vercel) o un servidor local";
+    buildUI(); fit(); refresh();
+  };
+
+  // ── Interfaz
+  const buildUI = () => {
+    $("mundos").innerHTML = MUNDOS.map(([id, n]) => `<button data-m="${id}">${n}</button>`).join("");
+    $("mundos").onclick = e => { const b = e.target.closest("button"); if (b) { mundo = b.dataset.m; sel = null; fit(); refresh(); } };
+    $("tools").innerHTML = TOOLS.map(([id, n, k]) => `<button data-t="${id}" title="${n} (${k})">${n}</button>`).join("");
+    $("tools").onclick = e => { const b = e.target.closest("button"); if (b) { tool = b.dataset.t; marks(); } };
+    const groups = [...new Set(TILES.map(t => t.group))];
+    $("palette").innerHTML = groups.map(gr => `<h2>${gr}</h2><div class="pal">${TILES.filter(t => t.group === gr).map(t => `<button data-c="${encodeURIComponent(t.ch)}" title="${t.name}"><span class="sw" style="background:${t.color}">${esc(t.glyph)}</span>${t.name}<small>${esc(t.ch)}</small></button>`).join("")}</div>`).join("");
+    $("palette").onclick = e => { const b = e.target.closest("button"); if (b) { brush = decodeURIComponent(b.dataset.c); if (tool === "gotero") tool = "lapiz"; marks(); } };
+  };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const marks = () => {
+    document.querySelectorAll("#mundos button").forEach(b => b.classList.toggle("on", b.dataset.m === mundo));
+    document.querySelectorAll("#tools button").forEach(b => b.classList.toggle("on", b.dataset.t === tool));
+    document.querySelectorAll("#palette button").forEach(b => b.classList.toggle("on", decodeURIComponent(b.dataset.c) === brush));
+    $("heat").classList.toggle("on", heat);
+    $("undo").disabled = !undo[mundo].length; $("redo").disabled = !redo[mundo].length;
+    const d = doc(), changed = d.filas.map(r => r.join("")).join("\n") !== game[mundo].filas.join("\n") || JSON.stringify(d.carteles) !== JSON.stringify(game[mundo].carteles);
+    $("draft").textContent = d.staleDraft ? "el juego cambió: se descartó un borrador viejo" : changed ? "cambios sin aplicar al juego" : "";
+    $("restore").disabled = !changed;
+  };
+
+  // ── Documento
+  const doc = () => docs[mundo];
+  const W = () => doc().filas[0].length, H = () => doc().filas.length;
+  const at = (x, y) => doc().filas[y] && doc().filas[y][x];
+  const save = () => {
+    const out = {}; for (const [id] of MUNDOS) out[id] = { filas: docs[id].filas.map(r => r.join("")), carteles: docs[id].carteles, base: docs[id].base };
+    store("punto.editor", JSON.stringify(out));
+  };
+  const snapshot = () => ({ filas: doc().filas.map(r => r.slice()), carteles: { ...doc().carteles } });
+  const push = () => { undo[mundo].push(snapshot()); if (undo[mundo].length > 150) undo[mundo].shift(); redo[mundo] = []; };
+  const restoreSnap = s => { doc().filas = s.filas; doc().carteles = s.carteles; };
+  const put = (x, y, ch) => {
+    if (x < 0 || y < 0 || x >= W() || y >= H()) return;
+    const prev = doc().filas[y][x]; if (prev === ch) return;
+    doc().filas[y][x] = ch;
+    const k = x + "," + y;
+    if (prev === "T" && ch !== "T") delete doc().carteles[k];
+    if (ch === "T" && !(k in doc().carteles)) doc().carteles[k] = "";
+  };
+  const flood = (x, y, ch) => {
+    const from = at(x, y); if (from === undefined || from === ch) return;
+    const q = [[x, y]]; const seen = new Set([x + "," + y]);
+    while (q.length) { const [cx, cy] = q.pop(); put(cx, cy, ch); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = cx + a, ny = cy + b, k = nx + "," + ny; if (!seen.has(k) && at(nx, ny) === from) { seen.add(k); q.push([nx, ny]); } } }
+  };
+  const lineCells = (a, b) => {
+    const horiz = Math.abs(b.x - a.x) >= Math.abs(b.y - a.y), out = [];
+    if (horiz) for (let x = Math.min(a.x, b.x); x <= Math.max(a.x, b.x); x++) out.push([x, a.y]);
+    else for (let y = Math.min(a.y, b.y); y <= Math.max(a.y, b.y); y++) out.push([a.x, y]);
+    return out;
+  };
+  const rectCells = (a, b) => { const o = []; for (let y = Math.min(a.y, b.y); y <= Math.max(a.y, b.y); y++) for (let x = Math.min(a.x, b.x); x <= Math.max(a.x, b.x); x++) o.push([x, y]); return o; };
+
+  // ── Distancias desde el inicio (todo abierto, el agua sin puente no se cruza)
+  const distances = () => {
+    const g = doc().filas; let s = null;
+    g.forEach((r, y) => r.forEach((c, x) => { if (c === (mundo === "laberinto" ? "A" : "S")) s = [x, y]; }));
+    if (!s) return null;
+    const d = new Map([[s.join(","), 0]]), q = [s];
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + a, ny = y + b, c = g[ny] && g[ny][nx], k = nx + "," + ny;
+        if (c === undefined || d.has(k) || "#~r".includes(c)) continue;
+        d.set(k, d.get(x + "," + y) + 1); q.push([nx, ny]);
+      }
+    }
+    return d;
+  };
+
+  // ── Dibujo
+  const cv = $("cv"), ctx = cv.getContext("2d");
+  let drag = null, dist = null;
+  const draw = () => {
+    const w = W(), h = H(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = w * cell * dpr; cv.height = h * cell * dpr; cv.style.width = w * cell + "px"; cv.style.height = h * cell + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const preview = new Map();
+    if (drag && (drag.tool === "rect" || drag.tool === "linea")) for (const [x, y] of (drag.tool === "rect" ? rectCells : lineCells)(drag.a, drag.b)) preview.set(x + "," + y, true);
+    const maxD = dist ? Math.max(...dist.values()) : 1;
+    ctx.font = `500 ${Math.round(cell * 0.62)}px "IBM Plex Mono", monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const k = x + "," + y, ch = preview.has(k) ? brush : at(x, y), t = BY[ch] || { color: "#ff00aa", glyph: ch };
+      ctx.fillStyle = t.color; ctx.fillRect(x * cell, y * cell, cell, cell);
+      if (heat && dist && dist.has(k) && ch !== "#") {
+        const v = dist.get(k) / maxD; ctx.fillStyle = `hsla(${Math.round(210 - 210 * v)}, 85%, 50%, .55)`; ctx.fillRect(x * cell, y * cell, cell, cell);
+      }
+      if (t.glyph && cell >= 9) { ctx.fillStyle = ch === "#" || ch === "%" ? "#ecebe6" : "#151513"; ctx.fillText(t.glyph, x * cell + cell / 2, y * cell + cell / 2 + 1); }
+      if (preview.has(k)) { ctx.strokeStyle = "rgba(159,176,255,.9)"; ctx.lineWidth = 1; ctx.strokeRect(x * cell + .5, y * cell + .5, cell - 1, cell - 1); }
+    }
+    if (cell >= 10) { ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1; ctx.beginPath(); for (let x = 0; x <= w; x++) { ctx.moveTo(x * cell + .5, 0); ctx.lineTo(x * cell + .5, h * cell); } for (let y = 0; y <= h; y++) { ctx.moveTo(0, y * cell + .5); ctx.lineTo(w * cell, y * cell + .5); } ctx.stroke(); }
+    if (mundo === "ciudad") { ctx.strokeStyle = "rgba(255,143,128,.7)"; ctx.setLineDash([4, 4]); for (const y of [31, 32]) if (y < h) ctx.strokeRect(.5, y * cell + .5, w * cell - 1, cell - 1); ctx.setLineDash([]); }
+    for (const p of [sel, hover]) if (p) { ctx.strokeStyle = p === sel ? "#9fb0ff" : "rgba(255,255,255,.85)"; ctx.lineWidth = 2; ctx.strokeRect(p.x * cell + 1, p.y * cell + 1, cell - 2, cell - 2); }
+  };
+
+  // ── Validación
+  const validate = () => {
+    const filas = doc().filas.map(r => r.join("")), car = doc().carteles;
+    let checks;
+    if (mundo === "ciudad") checks = window.validarCiudad ? window.validarCiudad(filas, car) : [{ seccion: "Validación", ok: false, msg: "no se cargó validar-ciudad.js" }];
+    else checks = basic(filas, car);
+    const bad = checks.filter(c => !c.ok && !c.warn).length;
+    let html = `<div class="summary ${bad ? "bad" : "ok"}">${bad ? bad + (bad === 1 ? " problema" : " problemas") : mundo === "ciudad" ? "Progresión válida" : "Forma válida"}</div><ul class="checks">`;
+    let last = "";
+    for (const c of checks) { if (c.seccion !== last) { html += `<li class="sec">${esc(c.seccion)}</li>`; last = c.seccion; } html += `<li class="${c.ok ? "ok" : c.warn ? "warn" : "bad"}">${esc(c.msg)}</li>`; }
+    $("checks").innerHTML = html + "</ul>";
+  };
+  const basic = (filas, car) => {
+    const out = [], H = filas.length, W = filas[0].length, s = filas.join("");
+    const n = ch => s.split(ch).length - 1;
+    const add = (ok, msg, seccion = "Forma", warn) => out.push({ seccion, ok: !!ok, msg, warn });
+    add(filas.every(r => r.length === W), `todas las filas miden ${W}`);
+    add(/^#+$/.test(filas[0]) && /^#+$/.test(filas[H - 1]) && filas.every(r => r[0] === "#" && r[W - 1] === "#"), "borde cerrado");
+    const signs = []; filas.forEach((r, y) => [...r].forEach((c, x) => { if (c === "T") signs.push(x + "," + y); }));
+    add(signs.every(k => car[k]), "cada cartel tiene texto", "Carteles");
+    if (mundo === "laberinto") {
+      add(n("A") === 1 && n("K") === 1 && n("k") === 1, "un portal, una lápida y una llave", "Conteos");
+      const [kx, ky] = (() => { const i = s.indexOf("K"); return [i % W, Math.floor(i / W)]; })();
+      add([1, 2, 3].every(d => filas[ky][kx + d] === "."), "las 3 casillas a la derecha de la lápida son calle (la pista ocupa 4)", "Conteos");
+      const fixed = [[13, 13, "sombra"], [21, 11, "sombra"], [21, 15, "guarida"], [21, 13, "guarida"], [15, 9, "refugio de la persecución"]];
+      for (const [x, y, q] of fixed) add(filas[y] && ".R".includes(filas[y][x]), `(${x},${y}) es caminable: el código pone ahí una ${q}`, "Coordenadas fijas del código", true);
+    } else {
+      add(n("S") === 1 && n("Z") === 1 && n("f") === 1 && n("Q") === 1 && n("P") === 1, "inicio, reinicio, fragmento, salida y reja de pares", "Conteos");
+      add(n("j") === 16, `16 cartas de memoria (hay ${n("j")})`, "Conteos");
+      add(true, "el código usa x ≤ 10 (cuarto de cajas) y x ≥ 30 (hielo): si cambian los cuartos, hay que avisar", "Coordenadas fijas del código", true);
+    }
+    return out;
+  };
+  const distList = () => {
+    if (!dist || mundo !== "ciudad") { $("distbox").hidden = true; return; }
+    const items = [];
+    doc().filas.forEach((r, y) => r.forEach((c, x) => {
+      if (!/[copOaleqhfkzCLHVmQX<>]/.test(c)) return;
+      const ds = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => dist.get((x + a) + "," + (y + b))).filter(v => v !== undefined);
+      items.push({ x, y, c, d: ds.length ? Math.min(...ds) : null });
+    }));
+    items.sort((a, b) => (a.d ?? 1e9) - (b.d ?? 1e9));
+    $("distbox").hidden = false;
+    $("dist").innerHTML = items.map(i => `<li data-x="${i.x}" data-y="${i.y}"><span class="sw" style="background:${BY[i.c].color}">${esc(BY[i.c].glyph)}</span><span>${esc(BY[i.c].name)}</span><span>${i.d ?? "sin camino"}</span></li>`).join("");
+  };
+  $("dist").addEventListener("mouseover", e => { const li = e.target.closest("li"); if (li) { hover = { x: +li.dataset.x, y: +li.dataset.y }; draw(); } });
+
+  const refresh = (light) => {
+    dist = distances(); marks(); draw(); info(); signBox();
+    if (!light) { validate(); distList(); save(); }
+  };
+
+  // ── Panel de la casilla y del cartel
+  const info = () => {
+    if (!hover) { $("info").innerHTML = "Pasá el mouse por la grilla."; return; }
+    const ch = at(hover.x, hover.y), t = BY[ch], d = dist && dist.get(hover.x + "," + hover.y);
+    $("info").innerHTML = `<b>${hover.x}, ${hover.y}</b> · ${esc(t ? t.name : ch)} <code>${esc(ch)}</code><br>${d !== undefined ? d + " pasos desde el " + (mundo === "laberinto" ? "portal" : "inicio") : "no se llega desde el " + (mundo === "laberinto" ? "portal" : "inicio")}`;
+  };
+  const signBox = () => {
+    const show = sel && at(sel.x, sel.y) === "T";
+    $("signbox").hidden = !show; if (!show) return;
+    const k = sel.x + "," + sel.y; $("signkey").textContent = k;
+    if (document.activeElement !== $("signtext")) $("signtext").value = doc().carteles[k] || "";
+  };
+  let typing = false;
+  $("signtext").addEventListener("input", () => {
+    if (!sel) return;
+    if (!typing) { push(); typing = true; }
+    doc().carteles[sel.x + "," + sel.y] = $("signtext").value.replace(/\s+/g, " ").trim(); validate(); save(); marks();
+  });
+  $("signtext").addEventListener("blur", () => { typing = false; });
+
+  // ── Mouse
+  const cellAt = e => { const r = cv.getBoundingClientRect(); return { x: Math.floor((e.clientX - r.left) / cell), y: Math.floor((e.clientY - r.top) / cell) }; };
+  const inside = p => p.x >= 0 && p.y >= 0 && p.x < W() && p.y < H();
+  let pan = null;
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+  cv.addEventListener("pointerdown", e => {
+    const p = cellAt(e); if (!inside(p)) return;
+    cv.setPointerCapture(e.pointerId);
+    if (e.shiftKey) { pan = { x: e.clientX, y: e.clientY, sl: $("stage").scrollLeft, st: $("stage").scrollTop }; return; }
+    if (e.button === 2 || tool === "gotero") { brush = at(p.x, p.y); sel = p; if (tool === "gotero" && e.button !== 2) tool = "lapiz"; refresh(true); return; }
+    push(); sel = p;
+    if (tool === "balde") { flood(p.x, p.y, brush); refresh(); return; }
+    drag = { tool, a: p, b: p };
+    if (tool === "lapiz") put(p.x, p.y, brush);
+    refresh(true);
+  });
+  cv.addEventListener("pointermove", e => {
+    if (pan) { $("stage").scrollLeft = pan.sl - (e.clientX - pan.x); $("stage").scrollTop = pan.st - (e.clientY - pan.y); return; }
+    const p = cellAt(e); hover = inside(p) ? p : null;
+    if (drag && hover) { drag.b = p; if (drag.tool === "lapiz") put(p.x, p.y, brush); }
+    draw(); info();
+  });
+  const end = () => {
+    if (pan) { pan = null; return; }
+    if (!drag) return;
+    if (drag.tool === "rect" || drag.tool === "linea") for (const [x, y] of (drag.tool === "rect" ? rectCells : lineCells)(drag.a, drag.b)) put(x, y, brush);
+    if (brush === "T") sel = drag.b;
+    drag = null; refresh();
+  };
+  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  cv.addEventListener("pointerleave", () => { hover = null; draw(); info(); });
+  $("stage").addEventListener("wheel", e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoom(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+
+  // ── Zoom
+  const zoom = d => { cell = Math.max(5, Math.min(40, cell + d * 2)); draw(); };
+  const fit = () => { const s = $("stage"); cell = Math.max(5, Math.min(36, Math.floor(Math.min((s.clientWidth - 48) / W(), (s.clientHeight - 90) / H())))); };
+  $("zin").onclick = () => zoom(1); $("zout").onclick = () => zoom(-1); $("zfit").onclick = () => { fit(); draw(); };
+  addEventListener("resize", () => draw());
+
+  // ── Acciones
+  const doUndo = () => { if (!undo[mundo].length) return; redo[mundo].push(snapshot()); restoreSnap(undo[mundo].pop()); refresh(); };
+  const doRedo = () => { if (!redo[mundo].length) return; undo[mundo].push(snapshot()); restoreSnap(redo[mundo].pop()); refresh(); };
+  $("undo").onclick = doUndo; $("redo").onclick = doRedo;
+  $("heat").onclick = () => { heat = !heat; refresh(true); };
+  $("restore").onclick = () => {
+    if (!confirm("¿Descartar los cambios de " + mundo + " y volver al mapa del juego?")) return;
+    push(); doc().filas = game[mundo].filas.map(r => r.split("")); doc().carteles = { ...game[mundo].carteles }; doc().staleDraft = false; sel = null; refresh();
+  };
+  const exportText = () => {
+    const [, nombre, constName] = MUNDOS.find(m => m[0] === mundo), filas = doc().filas.map(r => r.join(""));
+    const car = Object.entries(doc().carteles).filter(([, v]) => v).sort((a, b) => { const [ax, ay] = a[0].split(",").map(Number), [bx, by] = b[0].split(",").map(Number); return ay - by || ax - bx; });
+    return `// ${nombre} (${filas[0].length} × ${filas.length}), exportado del editor de mapas el ${new Date().toLocaleDateString("sv")}\n` +
+      `  const ${constName} = [\n${filas.map(r => `    "${r}"`).join(",\n")}\n  ];\n\n` +
+      `// Carteles de ${nombre.toLowerCase()} (en CARTELES.${mundo})\n    ${mundo}: {\n${car.map(([k, v]) => `      "${k}": ${JSON.stringify(v)}`).join(",\n")}\n    }\n`;
+  };
+  $("export").onclick = () => { $("dlgname").textContent = MUNDOS.find(m => m[0] === mundo)[1].toLowerCase(); $("out").value = exportText(); $("dlg").showModal(); };
+  $("close").onclick = () => $("dlg").close();
+  $("copy").onclick = async () => { try { await navigator.clipboard.writeText($("out").value); $("copy").textContent = "Copiado"; } catch (e) { $("out").select(); document.execCommand("copy"); $("copy").textContent = "Copiado"; } setTimeout(() => { $("copy").textContent = "Copiar"; }, 1500); };
+  $("download").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([$("out").value], { type: "text/plain" })); a.download = `mapa-${mundo}.txt`; a.click(); URL.revokeObjectURL(a.href); };
+  $("play").onclick = () => {
+    if (!gameUrl) return;
+    store("punto.prueba", JSON.stringify({ mundo, filas: doc().filas.map(r => r.join("")), carteles: doc().carteles }));
+    window.open(gameUrl + "?prueba", "_blank");
+  };
+
+  // ── Teclado
+  addEventListener("keydown", e => {
+    if (e.target.tagName === "TEXTAREA" || $("dlg").open) return;
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); return; }
+    if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); doRedo(); return; }
+    if (mod) return;
+    const t = TOOLS.find(([, , k]) => k.toLowerCase() === e.key.toLowerCase());
+    if (t) { tool = t[0]; marks(); return; }
+    if (e.key.toLowerCase() === "d") { heat = !heat; refresh(true); }
+    if (e.key === "+" || e.key === "=") zoom(1);
+    if (e.key === "-") zoom(-1);
+  });
+
+  load();
+})();
+</script>

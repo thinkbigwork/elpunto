@@ -1,11 +1,11 @@
 # Lo que falta
 
-**Tres piezas son urgentes: la narrativa, el editor de niveles y medir dónde se traba la gente.**
+**Dos piezas son urgentes: la narrativa y medir dónde se traba la gente.** El editor de mapas ya está en prototipo.
 
 | Tema | Primer paso | Prioridad |
 | --- | --- | --- |
 | Narrativa y tono | Biblia del mundo en una página | Urgente |
-| Editor de niveles | Herramienta para dibujar mapas e importar calles reales | Urgente |
+| Editor de mapas | En prototipo para el equipo; falta cambiar el tamaño de los mapas y crear mundos nuevos | Media |
 | Medición | Registrar zona y tiempo de cada jugador | Urgente |
 | Tecnología | Elegir arquitectura antes del capítulo 1 | Alta |
 | Cuentas y guardado | Inicio de sesión simple y guardado en la nube | Alta |
