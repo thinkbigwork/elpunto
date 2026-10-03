@@ -52,7 +52,7 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 
 ## Publicar
 
-- El sitio está en Vercel: cada push a `main` lo publica. `vercel.json` arma `publico/` con el juego como `index.html` y el libro web en `/libro` (lee `libro/datos/libro.json`, generado en la publicación). Por ahora lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
+- El sitio está en Vercel (https://elpunto-mu.vercel.app, libro en /libro): cada push a `main` lo publica. `vercel.json` arma `publico/` con el juego como `index.html` y el libro web en `/libro` (lee `libro/datos/libro.json`, generado en la publicación). Por ahora lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
 - Versión de prueba privada, como artefacto de claude.ai: https://claude.ai/artifact/Wk6usAWzg5EEaXYzbTei7Q
 - El libro web: https://claude.ai/artifact/4eCjAgvK4WDtFqugZiZtA7
 - Si hay herramienta para publicar artefactos en la sesión, republicar en esos mismos links. Si no, el juego se prueba abriendo `juego/el-punto.html` en el navegador.
