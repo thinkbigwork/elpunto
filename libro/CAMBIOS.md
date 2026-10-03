@@ -1,6 +1,15 @@
 # Registro de cambios
 
-Versión actual del libro: **0.17** (2026-10-02).
+Versión actual del libro: **0.18** (2026-10-02).
+
+## 0.18 · El juego se publica en Vercel
+
+_2026-10-02_
+
+- El juego se publica en Vercel desde el repositorio: cada cambio que llega a la rama principal sale publicado solo.
+- Se publica únicamente el juego. El libro, las herramientas y las pruebas no quedan a la vista, para no revelar soluciones.
+
+Páginas: [arquitectura](tecnica/arquitectura.md), [decisiones](produccion/decisiones.md)
 
 ## 0.17 · La ciudad vuelve a su escala y suma barrios
 

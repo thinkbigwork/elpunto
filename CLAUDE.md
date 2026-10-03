@@ -52,7 +52,8 @@ Si la persona lo pide, actualizar también la versión web del libro (ver "Libro
 
 ## Publicar
 
-- El juego publicado es un artefacto de claude.ai: https://claude.ai/artifact/Wk6usAWzg5EEaXYzbTei7Q
+- El juego público está en Vercel: cada push a `main` lo publica. `vercel.json` copia solo `juego/el-punto.html` como `index.html`; nunca publicar el libro, las herramientas ni las pruebas (revelan soluciones).
+- Versión de prueba privada, como artefacto de claude.ai: https://claude.ai/artifact/Wk6usAWzg5EEaXYzbTei7Q
 - El libro web: https://claude.ai/artifact/4eCjAgvK4WDtFqugZiZtA7
 - Si hay herramienta para publicar artefactos en la sesión, republicar en esos mismos links. Si no, el juego se prueba abriendo `juego/el-punto.html` en el navegador.
 

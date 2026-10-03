@@ -50,6 +50,7 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| El juego se publica en Vercel, sin el libro ni las herramientas | 2 oct 2026 |
 | La programación sigue en Claude Code, con el libro en Markdown dentro del repositorio | 2 oct 2026 |
 | Si un vehículo atropella al punto, vuelve al inicio | 1 oct 2026 |
 | Campo visual reducido al 50 % en todas las eras | 1 oct 2026 |

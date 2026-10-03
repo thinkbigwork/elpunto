@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo sin dependencias",
+  "buildCommand": "rm -rf publico && mkdir publico && cp juego/el-punto.html publico/index.html",
+  "outputDirectory": "publico"
+}
