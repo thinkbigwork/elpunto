@@ -4,7 +4,7 @@ Un punto blanco en una pantalla negra. Sin reglas, sin instrucciones. Lo demás 
 
 ## Jugar
 
-Abrí `juego/el-punto.html` en el navegador. Flechas para moverse.
+Abrí `juego/el-punto.html` en el navegador, o entrá a https://elpunto-mu.vercel.app. Flechas o WASD para moverse; también anda con un control de PS4 o Xbox (cruceta o palanca izquierda).
 
 ## Libro de diseño
 

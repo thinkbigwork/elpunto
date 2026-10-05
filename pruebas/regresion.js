@@ -1,6 +1,6 @@
 // Prueba de regresión del juego. Uso: npm test
 // Crea una copia de prueba del juego con un gancho window.__t (nunca se agrega al juego publicado)
-// y recorre: orden aleatorio de figuras, zapatillas de ida y vuelta, encierro de cazadores,
+// y recorre: orden aleatorio de figuras, control de consola, zapatillas de ida y vuelta, encierro de cazadores,
 // salida del laberinto y final con zoom. Termina con código 1 si algo falla.
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
@@ -22,6 +22,32 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
   const orders = new Set();
   for (let i = 0; i < 5; i++) { const q = await b.newPage(); await q.goto(URL); await q.waitForTimeout(150); orders.add((await q.evaluate(() => __t.order)).join(',')); await q.close(); }
   ok(orders.size > 1, `cambia entre partidas (${orders.size} órdenes distintos en 5)`);
+
+  console.log('Control de consola');
+  {
+    const q = await b.newPage();
+    // un control falso con la distribución estándar: 17 botones y 4 ejes
+    await q.addInitScript(() => {
+      window.__pad = { connected: true, index: 0, mapping: 'standard', buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })), axes: [0, 0, 0, 0] };
+      navigator.getGamepads = () => [window.__pad];
+    });
+    q.on('pageerror', e => errs.push(e.message));
+    await q.goto(URL); await q.waitForTimeout(200);
+    const pos = () => q.evaluate(() => [__t.P.x, __t.P.y]);
+    const btn = (i, v) => q.evaluate(([i, v]) => { __pad.buttons[i].pressed = v; __pad.buttons[i].value = v ? 1 : 0; }, [i, v]);
+    const p0 = await pos();
+    await btn(15, true); await q.waitForTimeout(300);
+    ok((await pos()).join() === p0.join(), 'dormido, la cruceta no mueve');
+    await btn(15, false); await btn(0, true); await q.waitForTimeout(200); await btn(0, false); await q.waitForTimeout(100);
+    ok((await pos()).join() === p0.join(), 'un botón despierta sin mover');
+    await btn(15, true); await q.waitForTimeout(400); await btn(15, false);
+    const p1 = await pos();
+    ok(p1[0] > p0[0] && p1[1] === p0[1], `la cruceta mueve a la derecha (${p0} → ${p1})`);
+    await q.evaluate(() => { __pad.axes[0] = -0.9; }); await q.waitForTimeout(250); await q.evaluate(() => { __pad.axes[0] = 0; });
+    const p2 = await pos();
+    ok(p2[0] < p1[0] && p2[1] === p1[1], `la palanca izquierda mueve a la izquierda (${p1} → ${p2})`);
+    await q.close();
+  }
 
   const p = await b.newPage({ viewport: { width: 900, height: 600 } }); p.on('pageerror', e => errs.push(e.message));
   await p.goto(URL); await p.waitForTimeout(300); await p.keyboard.press('Space'); await p.waitForTimeout(300);

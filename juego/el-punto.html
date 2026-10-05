@@ -407,8 +407,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const hurt = (now, respawn) => {
     if (now < invulnUntil || trans) return;
     invulnUntil = now + 900;
-    if (shield > 0) { shield = 0; flash = 0.25; sfx.shieldBreak(); return; }
-    sfx.hit(); flash = 0.55; dimUntil = now + 1300; climb = null; stats.hits++;
+    if (shield > 0) { shield = 0; flash = 0.25; sfx.shieldBreak(); rumble(120, 0.4); return; }
+    sfx.hit(); rumble(260, 0.9); flash = 0.55; dimUntil = now + 1300; climb = null; stats.hits++;
     P.x = respawn.x; P.y = respawn.y;
   };
   const enter = now => {
@@ -574,6 +574,28 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   });
   addEventListener("keyup", e => { const i = pressed.indexOf(e.code); if (i >= 0) pressed.splice(i, 1); });
   addEventListener("blur", () => { pressed.length = 0; pointer = null; });
+
+  // control de consola (PS4, Xbox u otro con la distribución estándar): cruceta o palanca izquierda;
+  // cualquier botón despierta. El navegador lo muestra recién después de tocar un botón.
+  const PAD_DIRS = [[12, 0, -1], [13, 0, 1], [14, -1, 0], [15, 1, 0]];
+  let padHeld = [], padBlock = false;
+  const pad = () => { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(g => g && g.connected) || null; } catch (e) { return null; } };
+  const padRaw = g => {
+    for (const [b, dx, dy] of PAD_DIRS) if (g.buttons[b] && g.buttons[b].pressed) return [dx, dy];
+    const ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+    if (Math.max(Math.abs(ax), Math.abs(ay)) < 0.5) return null;
+    return Math.abs(ax) > Math.abs(ay) ? [Math.sign(ax), 0] : [0, Math.sign(ay)];
+  };
+  const padDir = () => { const g = pad(); return g && !padBlock ? padRaw(g) : null; };
+  const pollPad = now => {
+    const g = pad(); if (!g) { padHeld = []; return; }
+    const down = g.buttons.map(b => !!(b && b.pressed)), fresh = down.some((d, i) => d && !padHeld[i]);
+    padHeld = down;
+    // el botón que despierta no mueve: hay que soltar todo primero
+    if (padBlock && !down.some(Boolean) && !padRaw(g)) padBlock = false;
+    if (fresh) { if (!awake) { wake(now); padBlock = true; } else audio(); }
+  };
+  const rumble = (ms, k) => { try { const g = pad(); if (g && g.vibrationActuator) g.vibrationActuator.playEffect("dual-rumble", { duration: ms, strongMagnitude: k, weakMagnitude: k * 0.6 }); } catch (e) {} };
 
   const cv = document.getElementById("c");
   const ctx = cv.getContext("2d");
@@ -1303,6 +1325,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   let last = performance.now();
   const frame = t => {
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    pollPad(t);
     if (trans) {
       const e = t - trans.start;
       if (!trans.switched && e >= 450) {
@@ -1314,7 +1337,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     } else if (slide) {
       if (t >= slide.next) { const s0 = slide; slide = null; tryMove(s0.dx, s0.dy, t, true); if (slide) slide.next = t + 55; }
     } else if (awake) {
-      const k = pressed.length ? KEYS[pressed[pressed.length - 1]] : pointerDir();
+      const k = pressed.length ? KEYS[pressed[pressed.length - 1]] : pointerDir() || padDir();
       if (stuck && cur === cajas && !k && t - lastMove > 300) { if (!stuckSince) stuckSince = t; else if (t - stuckSince > 1600) resetRoom(t); }
       else stuckSince = 0;
       if (!k) climb = null;

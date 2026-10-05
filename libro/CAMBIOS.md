@@ -1,6 +1,15 @@
 # Registro de cambios
 
-Versión actual del libro: **0.21** (2026-10-02).
+Versión actual del libro: **0.22** (2026-10-04).
+
+## 0.22 · Control de consola
+
+_2026-10-04_
+
+- El juego se maneja con un control de PS4, Xbox u otro con la distribución estándar, conectado por USB o Bluetooth: cruceta o palanca izquierda para moverse, cualquier botón para despertar.
+- El botón que despierta no mueve al punto; el control vibra cuando el punto recibe un golpe.
+
+Páginas: [ciclo-central](jugabilidad/ciclo-central.md), [plataformas](tecnica/plataformas.md), [decisiones](produccion/decisiones.md)
 
 ## 0.21 · Editor de mapas
 
