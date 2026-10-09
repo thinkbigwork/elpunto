@@ -42,7 +42,7 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 - **Leer primero:** la ciudad empieza en el medio, en un barrio central cerrado con todo lo necesario para leer. Sus salidas son portones `G` que se abren al llegar al lado con el libro. Nada necesario para leer puede quedar afuera, y nada de afuera puede alcanzarse sin el libro (lo revisa `npm run validar:ciudad`).
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
 - Cazadores: buscan camino con BFS; quedan encerrados si no hay camino hasta el jugador.
-- Visión: radio base 1, cada chispa suma 0,5 (5 chispas → 3,5). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
+- Visión: radio base 1, cada chispa suma 0,5 (6 chispas → 4). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
 - Los puntos de regreso se calculan desde el mapa: al salir del laberinto, debajo de la grieta; al volver de Cajas, a la izquierda del portal `Q`.
 - Modo prueba: con `?prueba` el juego reemplaza un mundo por el que dejó el editor en `localStorage` (`punto.prueba`). Es parte del juego, no un gancho de prueba como `window.__t`.
 - Si llega un mapa exportado del editor: reemplazar el arreglo y las claves de `CARTELES` de ese mundo, correr `npm run validar:ciudad` (si es la ciudad) y `npm test`, y actualizar el libro.

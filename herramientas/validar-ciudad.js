@@ -24,7 +24,7 @@
     const unicos = { S: 'inicio', M: 'meta', H: 'casa', E: 'reja', X: 'grieta', Q: 'portal de Cajas', V: 'vitrina', L: 'biblioteca', C: 'crisol', m: 'caja de música' };
     const faltan = Object.entries(unicos).filter(([ch]) => count(ch) !== 1).map(([ch, n]) => `${n} (${count(ch)})`);
     if (!check(!faltan.length, 'uno de cada: inicio, meta, casa, reja, grieta, portal, vitrina, biblioteca, crisol, caja de música' + (faltan.length ? ' — mal: ' + faltan.join(', ') : ''))) return out;
-    check(count('c') === 4, `4 chispas en la ciudad (hay ${count('c')}; la 5.ª está en el laberinto)`);
+    check(count('c') === 5, `5 chispas en la ciudad (hay ${count('c')}; la 6.ª está en el laberinto)`);
     check(count('n') === 4 && ['1', '2', '3', '4'].every(c => count(c) === 1), '4 baldosas de notas y 4 pedestales');
     check(count('>') === 1 && count('<') === 1, 'una baldosa de cada zapatilla');
     check(['o', 'O', 'a', 'l', 'e', 'q'].every(c => count(c) === 1), 'lentes, armazón, libro, escudo, barreta');

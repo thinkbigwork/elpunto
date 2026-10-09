@@ -1,6 +1,15 @@
 # Registro de cambios
 
-Versión actual del libro: **0.23** (2026-10-09).
+Versión actual del libro: **0.24** (2026-10-09).
+
+## 0.24 · Una chispa junto al inicio
+
+_2026-10-09_
+
+- Nueva chispa en la plaza del inicio, a cinco pasos, del lado del otro lente: la primera luz también orienta.
+- El prototipo pasa a tener 6 chispas; con todas, la visión llega a 4 casillas.
+
+Páginas: [eras-visuales](arte-audio/eras-visuales.md), [decisiones](produccion/decisiones.md)
 
 ## 0.23 · El inicio en el medio y leer primero
 

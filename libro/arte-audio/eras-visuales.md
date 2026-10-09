@@ -16,7 +16,7 @@
 - **El salto a isométrica es un evento,** como en *Fez*.
 - **El primer color es un evento comunitario:** elegirlo con intención narrativa.
 - **Lo que llevás se nota** en todas las eras.
-- **Valores actuales:** al empezar se ve 1 casilla; cada chispa suma 0,5; con las 5 chispas del prototipo se llega a 3,5 (ajustado el 1 de octubre de 2026).
+- **Valores actuales:** al empezar se ve 1 casilla; cada chispa suma 0,5; con las 6 chispas del prototipo se llega a 4 (la sexta se sumó el 9 de octubre de 2026, en la plaza del inicio).
 
 ## Identidad de cada mundo (prototipo 3)
 
@@ -29,4 +29,4 @@
 Al llegar a la meta, la cámara se aleja durante 3 segundos hasta mostrar la ciudad entera iluminada, y recién entonces aparece el mensaje de felicitaciones.
 
 ---
-_Actualizado: 2026-10-01_
+_Actualizado: 2026-10-09_

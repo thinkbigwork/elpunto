@@ -34,7 +34,7 @@
 | La barreta permite levantar tablas mal puestas | 1 oct 2026 |
 | Cuatro figuras; la secuencia se evalúa completa y se enfría si falla | 1 oct 2026 |
 | Al llegar a la meta aparece un mensaje de felicitaciones | 1 oct 2026 |
-| El prototipo tiene 5 chispas en total | 1 oct 2026 |
+| El prototipo tiene 5 chispas en total; reemplazada: ahora son 6 | 1 oct 2026 |
 | Los anteojos se arman en un crisol con dos lentes y un armazón | 1 oct 2026 |
 | El sombrero está en una vitrina que se abre con una melodía | 1 oct 2026 |
 | Nuevo mundo anexo, Cajas, detrás de una pared falsa; da el fragmento | 1 oct 2026 |
@@ -50,6 +50,7 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| Una sexta chispa en la plaza del inicio: 6 chispas, visión máxima 4 | 9 oct 2026 |
 | El inicio pasa al medio del mapa, en un barrio central cerrado con todo lo necesario para leer | 9 oct 2026 |
 | Leer es obligatorio: el barrio central tiene dos portones (norte y sur) que se abren al saber leer | 9 oct 2026 |
 | El juego se maneja también con un control de consola (cruceta o palanca; cualquier botón despierta) | 4 oct 2026 |
@@ -63,7 +64,7 @@
 | Campo visual reducido al 50 % en todas las eras | 1 oct 2026 |
 | Tomar una chispa muestra cómo se agranda la visión | 1 oct 2026 |
 | Cada chispa ilumina un 50 % más | 1 oct 2026 |
-| Iluminación: 1 al empezar, 0,5 por chispa, 3,5 con las 5 chispas | 1 oct 2026 |
+| Iluminación: 1 al empezar, 0,5 por chispa (4 con las 6 chispas desde el 9 oct) | 1 oct 2026 |
 
 ---
 _Actualizado: 2026-10-09_
