@@ -1,6 +1,17 @@
 # Registro de cambios
 
-Versión actual del libro: **0.22** (2026-10-04).
+Versión actual del libro: **0.23** (2026-10-09).
+
+## 0.23 · El inicio en el medio y leer primero
+
+_2026-10-09_
+
+- El punto empieza en el medio del mapa, en un barrio central cerrado entre el río y la avenida.
+- En el barrio está todo lo necesario para leer: los dos lentes (uno se oye en la plaza oscura del inicio), el patio con el foso y el armazón, una tabla, y el refugio con el crisol y la biblioteca.
+- Nuevo terreno, el portón: las dos salidas del barrio (al norte y al sur) se abren solas al llegar al lado sabiendo leer. Junto al norte, un cartel nuevo: "El que lee, pasa."
+- Barreta, escudo, zapatillas y las tablas del puente quedan afuera del barrio. El sur conserva la casa del final y un refugio sin biblioteca.
+
+Páginas: [mapa-global](mundo/mapa-global.md), [prototipos](niveles/prototipos.md), [terreno](contenido/terreno.md), [objetos](contenido/objetos.md), [poderes](contenido/poderes.md), [carteles](contenido/carteles.md), [decisiones](produccion/decisiones.md)
 
 ## 0.22 · Control de consola
 

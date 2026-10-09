@@ -4,7 +4,7 @@
 // Lo usan la terminal (npm run validar:ciudad [juego/el-punto.html]) y el editor de mapas (en el navegador).
 (function (raiz) {
   const AVENIDA = [30, 33], CARRILES = [31, 32];
-  const DOOR = { H: 'llave', L: 'anteojos', E: 'orden', X: 'fragmento', V: 'melodia' };
+  const DOOR = { H: 'llave', L: 'anteojos', E: 'orden', X: 'fragmento', V: 'melodia', G: 'libro' };
   const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
   // devuelve [{ seccion, ok, msg }]
@@ -29,6 +29,7 @@
     check(count('>') === 1 && count('<') === 1, 'una baldosa de cada zapatilla');
     check(['o', 'O', 'a', 'l', 'e', 'q'].every(c => count(c) === 1), 'lentes, armazón, libro, escudo, barreta');
     check(count('b') === 2, 'puente roto de 2 casillas');
+    check(count('G') === 2, `2 portones que piden el libro (hay ${count('G')})`);
     check(count('p') >= 3, `tablas: ${count('p')}`);
 
     seccion = 'Carteles, regresos y avenida';
@@ -41,12 +42,12 @@
     check(g[qy][qx - 1] === '.' && g[qy][qx - 2] === '%', 'a la izquierda del portal de Cajas hay calle y después pared falsa (ahí se aparece al volver)');
     check(H > CARRILES[1] && CARRILES.every(y => g[y].slice(1, W - 1).every(c => c === '.')), `los carriles de autos (filas ${CARRILES.join(' y ')}) son calle de punta a punta`);
 
-    const reach = (open, built, tapar = -1) => {
+    const reach = (open, built) => {
       const k = (x, y) => x + ',' + y, from = one('S'), seen = new Set([k(...from)]), q = [from];
       while (q.length) {
         const [x, y] = q.shift();
         for (const [a, b] of DIRS) {
-          const nx = x + a, ny = y + b; if (nx < 0 || ny < 0 || nx >= W || ny >= H || ny <= tapar) continue;
+          const nx = x + a, ny = y + b; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
           const c = g[ny][nx], key = k(nx, ny);
           if (seen.has(key) || c === '#') continue;
           if ((c === '~' || c === 'b') && !built.has(key)) continue;
@@ -59,31 +60,36 @@
     };
     const sees = (set, ch) => find(ch).some(p => set.has(p.join(',')));
     const adj = (set, [x, y]) => DIRS.some(([a, b]) => set.has((x + a) + ',' + (y + b)));
-    const sur = (open, built) => reach(open, built, AVENIDA[1]);
     const open = new Set(), built = new Set();
 
-    seccion = '1. Sin nada, sin cruzar la avenida';
-    let r = sur(open, built);
+    // lo primero es leer: el inicio está en un barrio cerrado que tiene todo lo necesario
+    seccion = '1. Sin nada, dentro del barrio central';
+    let r = reach(open, built);
+    const barrio = r;
+    check(![...r].some(k => { const y = +k.split(',')[1]; return y <= 18 || y >= AVENIDA[0]; }), 'sin el libro no se sale del barrio: ni a la costanera ni a la avenida');
     check(sees(r, 'o') && sees(r, 'O'), 'los dos lentes');
-    check(find('p').some(([x, y]) => y > AVENIDA[1] && r.has(x + ',' + y)), 'una tabla al sur');
-    const foso = find('~').filter(([, y]) => y > AVENIDA[1]);
-    check(foso.length === 1 && adj(r, foso[0]), 'el foso del patio se alcanza');
+    check(find('p').some(p => r.has(p.join(','))), 'una tabla');
+    const foso = find('~').filter(p => adj(r, p));
+    check(foso.length === 1, 'el foso del patio se alcanza (una sola casilla de agua)');
     check(!sees(r, 'a'), 'el armazón está detrás del foso');
     check(adj(r, one('C')) || sees(r, 'C'), 'el crisol');
     check(adj(r, one('L')), 'la puerta de la biblioteca');
-    check(sees(r, '>') && sees(r, '<'), 'las baldosas de zapatillas');
+    check(find('G').every(p => adj(r, p)), 'los dos portones, cerrados');
 
     seccion = '2. Foso → armazón → anteojos → libro';
     if (foso[0]) built.add(foso[0].join(','));
-    check(sees(sur(open, built), 'a'), 'el armazón');
+    check(sees(reach(open, built), 'a'), 'el armazón');
     open.add('anteojos');
-    check(sees(sur(open, built), 'l'), 'el libro, sin cruzar la avenida');
+    check(sees(reach(open, built), 'l'), 'el libro, sin salir del barrio');
 
-    seccion = '3. Avenida, tablas y puente';
+    seccion = '3. Leer abre los portones: avenida, tablas y puente';
+    open.add('libro');
     r = reach(open, built);
-    const norte = find('p').filter(([x, y]) => y < AVENIDA[0] && r.has(x + ',' + y));
-    check(norte.length >= 2, `tablas alcanzables antes del puente: ${norte.length} (hacen falta 2)`);
+    check(r.size > barrio.size, 'con el libro se sale del barrio');
+    const afuera = find('p').filter(p => r.has(p.join(',')) && !barrio.has(p.join(',')));
+    check(afuera.length >= 2, `tablas afuera del barrio, antes del puente: ${afuera.length} (hacen falta 2)`);
     check(sees(r, 'q') && sees(r, 'e'), 'barreta y escudo');
+    check(sees(r, '>') && sees(r, '<'), 'las baldosas de zapatillas');
     check(find('b').some(p => adj(r, p)), 'el puente roto se alcanza');
     check(!sees(r, 'm') && !adj(r, one('X')), 'la meseta y la grieta están del otro lado del río');
     find('b').forEach(p => built.add(p.join(',')));

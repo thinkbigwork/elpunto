@@ -8,8 +8,8 @@
 | Tabla | Construir sobre agua o huecos | En prototipo |
 | Fragmento | Abrir la grieta hacia el laberinto. Se gana al resolver Cajas | En prototipo |
 | Llave | Abrir la casa; tomarla abre para siempre el portal del laberinto | En prototipo |
-| Lente | Dos lentes y un armazón forman los anteojos. Uno está al fondo de un callejón en el centro del sur; el otro, escondido en una plaza oscura (se lo oye llamar). Los dos se consiguen sin cruzar la avenida | En prototipo |
-| Armazón | En un patio rodeado por un foso, en el oeste: hay que tender una tabla para entrar. La tabla está en el otro extremo del sur | En prototipo |
+| Lente | Dos lentes y un armazón forman los anteojos. Los dos están en el barrio central: uno en una esquina; el otro, escondido en la plaza oscura del inicio (se lo oye llamar) | En prototipo |
+| Armazón | En un patio del barrio central rodeado por un foso: hay que tender una tabla para entrar. La tabla está en la esquina opuesta del barrio | En prototipo |
 | Anteojos | Se arman en el crisol; abren la biblioteca, donde está el libro | En prototipo |
 | Cuerda | Escalar sin esperar, bajar a pozos, unir cosas | Propuesto |
 | Piedra | Trabar un mecanismo o hacer ruido para distraer | Propuesto |
@@ -21,4 +21,4 @@
 | Mapa | Se arma por hojas: cada hoja muestra el contorno de una zona ya recorrida, para planear sin depender solo de la memoria | Propuesto (próximos capítulos) |
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

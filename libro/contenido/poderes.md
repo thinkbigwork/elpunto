@@ -4,7 +4,7 @@
 
 | Poder | Qué da | Estado |
 | --- | --- | --- |
-| Libro | Leer carteles; una segunda lectura revela nombres reales | En prototipo |
+| Libro | Leer carteles y abrir los portones del barrio central; una segunda lectura revela nombres reales | En prototipo |
 | Zapatillas | Dos baldosas fijas en una calle del sur: las flechas hacia un lado dan más velocidad, las del otro lado la devuelven a normal. Nunca desaparecen | En prototipo |
 | Escudo | Absorbe un golpe; se recarga en refugios | En prototipo |
 | Sombrero | Ver lo oculto y atravesar paredes falsas; indispensable para llegar a Cajas. Está en una vitrina que se abre repitiendo una melodía | En prototipo |
@@ -23,4 +23,4 @@ Los poderes de tiempo están en [Tiempo y poderes de tiempo](../jugabilidad/tiem
 Ningún poder se compra. Ver [Modelo de negocio](../negocio/modelo-negocio.md).
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

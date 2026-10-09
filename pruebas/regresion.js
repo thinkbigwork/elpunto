@@ -1,6 +1,6 @@
 // Prueba de regresión del juego. Uso: npm test
 // Crea una copia de prueba del juego con un gancho window.__t (nunca se agrega al juego publicado)
-// y recorre: orden aleatorio de figuras, control de consola, zapatillas de ida y vuelta, encierro de cazadores,
+// y recorre: orden aleatorio de figuras, control de consola, portones del barrio central, zapatillas de ida y vuelta, encierro de cazadores,
 // salida del laberinto y final con zoom. Termina con código 1 si algo falla.
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
@@ -58,6 +58,17 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
 
   console.log('Ciudad');
   ok(await ev(() => __t.city.grid[0].length === 61 && __t.city.grid.length === 48), 'mide 61 × 48');
+
+  console.log('Barrio central');
+  const st = await ev(() => [__t.city.start.x, __t.city.start.y]);
+  ok(Math.abs(st[0] - 30) <= 6 && Math.abs(st[1] - 24) <= 4, `el inicio está en el medio del mapa (${st})`);
+  const [nx, ny] = await ev(() => { const d = [...__t.city.doors.values()].filter(d => d.kind === 'porton').sort((a, b) => a.y - b.y)[0]; return [d.x, d.y]; });
+  await tp(nx, ny + 1); await go('U');
+  ok(await ev(() => __t.P.y) === ny + 1, 'sin el libro, el portón norte no deja pasar');
+  await ev(() => __t.powers.add('libro'));
+  await tp(nx + 1, ny + 1); await go('L'); await go('U'); await go('U');
+  ok(await ev(() => __t.P.y) === ny - 1, 'con el libro, el portón se abre al llegar al lado');
+  await ev(() => __t.powers.delete('libro'));
 
   console.log('Zapatillas');
   const [fx, fy] = (await find('>'))[0]; await tp(fx, fy - 1); await go('D');

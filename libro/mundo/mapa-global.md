@@ -9,7 +9,8 @@
 - El mapa se recrea a mano, inspirado en el lugar real: sin datos externos ni dependencias.
 - Los mundos anexos son lugares reales de otras partes del mundo.
 - En el prototipo la ciudad mide 61 × 48 casillas, a la escala del primer mapa: calles de 1 casilla y manzanas compactas (61 manzanas). El núcleo original de 41 × 32 está intacto; alrededor se sumaron barrios: una franja de manzanas entre la meseta y el río, todo el este (con una plazoleta) y una fila de manzanas entre la avenida y la casa, que es lo primero que se recorre a oscuras.
-- Los objetos se reparten por toda la ciudad: para conseguir la lectura hay que recorrer el sur de punta a punta, y el refugio está en el extremo este. Las manzanas tienen rincones (callejones sin salida, patios interiores y pasajes); algunos esconden algo y otros no.
+- **Se empieza en el medio del mapa, en un barrio central cerrado** entre el río y la avenida. Ahí está todo lo necesario para leer, y sus dos salidas son portones que se abren al saber leer: al norte, hacia la costanera y el puente; al sur, hacia la avenida. Lo primero que se logra es leer, porque sin eso los carteles no dicen nada.
+- El resto de los objetos se reparte por toda la ciudad. Las manzanas tienen rincones (callejones sin salida, patios interiores y pasajes); algunos esconden algo y otros no.
 - Agrandar estirando no sirve: calles más anchas no cuestan más de explorar. Lo que hace grande a la ciudad es tener más cruces.
 
 ## Cómo se revela
@@ -31,4 +32,4 @@ Un **mapa base** con lógica propia (ciudad, edificio con pisos y escaleras) y u
 - **Sin datos de terceros:** recrear a mano evita licencias y dependencias. La única regla es no calcar mapas existentes.
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

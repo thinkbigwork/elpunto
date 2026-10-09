@@ -39,6 +39,7 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 - **La lógica vive en una grilla y el dibujo es una capa aparte.** Cada mundo es un arreglo de filas de texto; cada carácter es un tipo de casilla, objeto o puerta (ver el `switch` del constructor de mundos).
 - Mundos actuales: **ciudad** (mapa base, 61 × 48, calles de 1 casilla), **laberinto** (23 × 17) y **cajas** (35 × 9, tres cuartos: empujar cajas, memoria de pares y hielo).
 - **Escala de la ciudad:** calles de 1 casilla y manzanas compactas, como `referencias/ciudad-original-41x32.txt`. Para agrandarla se suman calles, manzanas y barrios; nunca se estira.
+- **Leer primero:** la ciudad empieza en el medio, en un barrio central cerrado con todo lo necesario para leer. Sus salidas son portones `G` que se abren al llegar al lado con el libro. Nada necesario para leer puede quedar afuera, y nada de afuera puede alcanzarse sin el libro (lo revisa `npm run validar:ciudad`).
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
 - Cazadores: buscan camino con BFS; quedan encerrados si no hay camino hasta el jugador.
 - Visión: radio base 1, cada chispa suma 0,5 (5 chispas → 3,5). Al ganar, la cámara se aleja hasta mostrar el mapa entero.

@@ -13,7 +13,8 @@
 | Refugio | Calma; recarga el escudo | En prototipo |
 | Zona de alarma | Suena "no es por aquí" | En prototipo |
 | Grieta y portal | Paso a un mundo anexo; una vez resuelto el anexo, se entra y se sale libremente | En prototipo |
-| Biblioteca | Edificio cerrado en el refugio; se abre con los anteojos | En prototipo |
+| Biblioteca | Edificio cerrado en el refugio del barrio central; se abre con los anteojos | En prototipo |
+| Portón | Salida del barrio central; se abre solo al llegar al lado sabiendo leer. Antes muestra el libro, como las demás puertas | En prototipo |
 | Crisol | Mesa de óptico junto a la biblioteca; arma los anteojos | En prototipo |
 | Caja de música | Al pisarla toca la melodía de la vitrina (5 notas, distinta para cada jugador) | En prototipo |
 | Baldosas de notas | Cuatro baldosas con una nota cada una; marcadas con 1 a 4 rayas | En prototipo |
@@ -35,4 +36,4 @@
 | Niebla | Reduce la visión | Propuesto |
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

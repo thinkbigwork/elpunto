@@ -7,8 +7,9 @@
 | Lugar | Texto |
 | --- | --- |
 | A cinco pasos del inicio | Lo que se ve no es todo lo que hay. |
-| Antes de la avenida | Mirá a los dos lados. |
-| Refugio | Acá nada te alcanza. Volvé cuando lo necesites. |
+| Junto al portón norte del barrio central | El que lee, pasa. |
+| Junto al portón sur, antes de la avenida | Mirá a los dos lados. |
+| Refugio del barrio central | Acá nada te alcanza. Volvé cuando lo necesites. |
 | Junto al puente roto | Lo roto también se arregla. |
 | Cerca de la meseta | Algunas paredes se suben. Hay que insistir. |
 | Cuarto secreto | Ahora ves lo que otros no ven. |
@@ -24,4 +25,4 @@
 - Todos los textos se guardan aparte para poder traducirlos.
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

@@ -4,7 +4,7 @@
 
 ## Prototipo 3 (vigente)
 
-Recorrido: solo el punto → cartel ilegible a cinco pasos → el acorde de calma lleva al refugio, donde la biblioteca está cerrada → en el sur: un lente en la calle, otro en la plaza oscura (campanita), una tabla para el foso del patio (armazón) → crisol: anteojos → biblioteca: libro (ya se leen los carteles) → zapatillas (baldosas de ida y vuelta) → cruzar la avenida → tablas, barreta y escudo → construir un puente → escalar la meseta → caja de música y vitrina: sombrero → pared falsa → [Cajas](../niveles/cajas.md): empujar cajas, memoria de pares, hielo → fragmento → grieta → laberinto → llave: el laberinto despierta y hay que escapar de los cazadores, o encerrarlos empujando el bloque de su guarida → casa → cuatro figuras en el orden de la lápida → la cámara se aleja → "Llegaste".
+Recorrido: solo el punto, en el medio del mapa → cartel ilegible a cinco pasos → una campanita en la plaza oscura (lente escondido) → el acorde de calma lleva al refugio, donde la biblioteca está cerrada → en el barrio central: el otro lente en una esquina, una tabla para el foso del patio (armazón) → crisol: anteojos → biblioteca: libro (ya se leen los carteles) → los portones del barrio se abren → al sur, cruzar la avenida: barreta, escudo, zapatillas y tablas → al norte, construir el puente → escalar la meseta → caja de música y vitrina: sombrero → pared falsa → [Cajas](../niveles/cajas.md): empujar cajas, memoria de pares, hielo → fragmento → grieta → laberinto → llave: el laberinto despierta y hay que escapar de los cazadores, o encerrarlos empujando el bloque de su guarida → casa, en el sur → cuatro figuras en el orden de la lápida → la cámara se aleja → "Llegaste".
 
 ## Historial
 
@@ -15,4 +15,4 @@ Recorrido: solo el punto → cartel ilegible a cinco pasos → el acorde de calm
 | Prototipo 1 | Punto, oscuridad, visión que crece, pedestales, sombras | Visión demasiado amplia; faltaban puertas con requisitos visibles |
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

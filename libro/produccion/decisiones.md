@@ -40,7 +40,7 @@
 | Nuevo mundo anexo, Cajas, detrás de una pared falsa; da el fragmento | 1 oct 2026 |
 | Cajas: empujar cajas, memoria de pares y hielo | 1 oct 2026 |
 | Final: la cámara se aleja hasta mostrar todo el mapa antes del mensaje | 1 oct 2026 |
-| La lectura se consigue al principio, sin cruzar la avenida | 2 oct 2026 |
+| La lectura se consigue al principio, sin cruzar la avenida; reemplazada por el barrio central | 2 oct 2026 |
 | Persecución con música al tomar la llave del laberinto | 2 oct 2026 |
 | Resumen final con estadísticas completas | 2 oct 2026 |
 | La temporada se divide en capítulos (antes "etapas") | 2 oct 2026 |
@@ -50,6 +50,8 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| El inicio pasa al medio del mapa, en un barrio central cerrado con todo lo necesario para leer | 9 oct 2026 |
+| Leer es obligatorio: el barrio central tiene dos portones (norte y sur) que se abren al saber leer | 9 oct 2026 |
 | El juego se maneja también con un control de consola (cruceta o palanca; cualquier botón despierta) | 4 oct 2026 |
 | Editor de mapas solo para el equipo, en /editor; abrirlo a jugadores queda para más adelante | 2 oct 2026 |
 | El juego acepta un mapa de prueba del editor (?prueba), solo en el navegador de quien lo prueba | 2 oct 2026 |
@@ -64,4 +66,4 @@
 | Iluminación: 1 al empezar, 0,5 por chispa, 3,5 con las 5 chispas | 1 oct 2026 |
 
 ---
-_Actualizado: 2026-10-04_
+_Actualizado: 2026-10-09_

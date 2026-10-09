@@ -29,7 +29,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   // b  puente roto    =  puente         ^  borde escalable %  pared falsa
   // R  refugio        !  "no es por aquí"                  T  cartel
   // c chispa · p tabla · f fragmento · k llave · l libro · z zapatillas · e escudo · h sombrero
-  // H puerta de casa · E reja · X grieta · 1 2 3 pedestales · M meta · A portal · K pista · S inicio
+  // G portón (se abre al saber leer) · H puerta de casa · E reja · X grieta · 1 2 3 pedestales · M meta · A portal · K pista · S inicio
   const CIUDAD = [
     "#############################################################",
     "#!##########................................................#",
@@ -50,34 +50,34 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     "#~~~~~~~~~~~~~~~~b~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#",
     "#~~~~~~~~~~~~~~~~=~~~~~~~~~~~~.....~~~~~~~~~~~~~~~~~~~~~~~~~#",
     "#...............T...........................................#",
-    "#.########.#########.#,,,,,,##.########.#####.######.######.#",
-    "#.####p###.#########.#,,,,,,##.########.#####.######.######.#",
-    "#.####.###.#########.###.#####.########.#####.######.######.#",
+    "#.#####.#####.################G################.#####.#####.#",
+    "#.##p##.#####.#o.............T...............c#.##p##.#####.#",
+    "#.##.##.#####.#.######........T....RRRRRRRRRRR#.##.##.#####.#",
+    "#.............#.#,,,,#.............RRT##L##RRR#.............#",
+    "#.#####.#####.#.#,,,,#.............RRR#,,,#RRR#.#####.#####.#",
+    "#.#####.#####.#.~,,a,#......S......RCR#,l,#RRR#.#####.##e...#",
+    "#.#####.#####.#.#,,,,#.............RRR#,,,#RRR#.#####.#####.#",
+    "#.............#.#,,,,#..........O..RRR#####RRR#.............#",
+    "#.#,,,#.#####.#.######.............RRRRRRRRRRR#.#,,,#.#####.#",
+    "#.#,,,#.#####.#..............T...............p#.#,,,#.#####.#",
+    "#.#####.#####.################G################.#####.#####.#",
     "#...........................................................#",
-    "#.########.####.####.####.####.########.#####........######.#",
-    "#.########.####q####.####.####.########.#####...p....###e...#",
-    "#.########.#########.####.####.########.#####........######.#",
-    "#...........................................................#",
-    "#.########.#########.#########.#,,,,p,#.#####.######.######.#",
-    "#.########.#########.#########.#,,,,,,#.#####.######.######.#",
-    "#.########.#########.#########.###.####.#####.######.######.#",
     "#...........................................................#",
     "#...........................................................#",
     "#...........................................................#",
-    "#.......T...................................................#",
     "#.#####.##.##.######.#####.######.#####.#####.######.######.#",
     "#.......#,,,#.######.#####.######.#####.#####.######.###p.#.#",
-    "#.#####.#,,,#.######.#####.######...o##.#####.######.####.#.#",
+    "#.#####.#,,,#.######.#####.######....##.#####.######.####.#.#",
     "#.#####.#####.######.#####.######.#####.#####.######.####.#.#",
     "#...........................................................#",
     "#.###H#######.######.#####.######.#####.#####.RRRRRRRRRRRRR.#",
-    "#.#,,,,2#,,,#.#,,,,#.......######.#####>#####.RRRT##L##RRRR.#",
-    "#.#1,,,,#,,,#.#,,,,#.......#,,,,#.#####.#####.RRRR#,,,#RRRR.#",
-    "#.#,,,,,E,M,#.~,,a,#...O...#,c,,..#####....##.RRCR#,l,#RRRR.#",
-    "#.#,,,,,#,,,#.#,,,,#.......#,,,,#.#####.##c##.RRRR#,,,#RRRR.#",
+    "#.#,,,,2#,,,#.#,,,,#.......######.#####>#####.RRRR#####RRRR.#",
+    "#.#1,,,,#,,,#.#,,,,#.......#,,,,#.#####.#####.RRRR#####RRRR.#",
+    "#.#,,,,,E,M,#..,,q,#.......#,,,,..#####....##.RRRR#####RRRR.#",
+    "#.#,,,,,#,,,#.#,,,,#.......#,,,,#.#####.##c##.RRRR#####RRRR.#",
     "#.#3,,,4#,,,#.#,,,,#.......######.#####<#####.RRRR#####RRRR.#",
     "#.###########.######.#####.######.#####.#####.RRRRRRRRRRRRR.#",
-    "#S.....T....................................................#",
+    "#...........................................................#",
     "#############################################################"
   ];
   const LABERINTO = [
@@ -112,9 +112,10 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   ];
   const CARTELES = {
     ciudad: {
-      "7,46": "Lo que se ve no es todo lo que hay.",
-      "8,33": "Mirá a los dos lados.",
-      "49,40": "Acá nada te alcanza. Volvé cuando lo necesites.",
+      "30,21": "Lo que se ve no es todo lo que hay.",
+      "37,22": "Acá nada te alcanza. Volvé cuando lo necesites.",
+      "29,20": "El que lee, pasa.",
+      "29,28": "Mirá a los dos lados.",
       "16,18": "Lo roto también se arregla.",
       "24,8": "Algunas paredes se suben. Hay que insistir.",
       "19,5": "Ahora ves lo que otros no ven.",
@@ -152,6 +153,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         case "H": door("casa", "llave", true); break;
         case "L": door("casa", "anteojos", true); break;
         case "E": door("reja", "orden", false); break;
+        case "G": door("porton", "libro", false); break;
         case "X": door("grieta", "fragmento", true); break;
         case "1": case "2": case "3": case "4": w.peds.push({ x, y, lit: false }); w.grid[y][x] = ","; break;
         case "M": w.goal = { x, y }; w.grid[y][x] = ","; break;
@@ -368,7 +370,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     if (!inside(cur, nx, ny)) return bump(now);
     const d = doorAt(cur, nx, ny);
     if (d && !d.open) {
-      if (d.need !== "orden" && has(d.need)) {
+      if (d.need !== "orden" && (d.need === "libro" ? powers.has("libro") : has(d.need))) {
         d.open = true; d.openAt = now;
         if (d.consume) inv[d.need]--;
         sfx.open();
@@ -423,6 +425,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       } else { inv[it.kind]++; sfx.pickup(); }
       pickups.push({ kind: it.kind, x: it.x, y: it.y, t: now, w: cur });
     }
+    // los portones del barrio central se abren solos al lado de quien sabe leer
+    if (powers.has("libro")) for (const d of cur.doors.values()) if (d.kind === "porton" && !d.open && Math.abs(d.x - P.x) + Math.abs(d.y - P.y) === 1) { d.open = true; d.openAt = now + 300; setTimeout(sfx.open, 300); }
     if (cur.grid[P.y][P.x] === "R" && powers.has("escudo") && shield === 0) { shield = 1; sfx.shieldBack(); }
     if (cur.grid[P.y][P.x] === ">" && !powers.has("zapatillas")) { powers.add("zapatillas"); sfx.fast(); }
     if (cur.grid[P.y][P.x] === "<" && powers.has("zapatillas")) { powers.delete("zapatillas"); sfx.slow(); }
@@ -944,12 +948,14 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
           ctx.strokeStyle = rgba(0.75 * a * (1 - k)); ctx.strokeRect(sx - S * 0.38, sy - S * 0.38 - k * S * 0.3, S * 0.76, S * 0.76);
           ctx.strokeStyle = rgba(0.35 * a * (1 - k)); ctx.beginPath(); ctx.moveTo(sx - S * 0.26, sy + S * 0.1); ctx.lineTo(sx - S * 0.06, sy - S * 0.26); ctx.moveTo(sx - S * 0.14, sy + S * 0.22); ctx.lineTo(sx + S * 0.02, sy - S * 0.06); ctx.stroke();
         }
-      } else if (d.kind === "reja") {
+      } else if (d.kind === "reja" || d.kind === "porton") {
         const a = base; if (a < 0.01) continue;
         if (!d.open || open < 900) {
-          const k = d.open ? clamp01(open / 900) : 0;
+          const k = d.open ? clamp01(open / 900) : 0, lift = k * S * 0.6;
           ctx.strokeStyle = rgba(0.8 * a * (1 - k));
-          for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.moveTo(sx + j * S * 0.22, sy - S * 0.42 - k * S * 0.6); ctx.lineTo(sx + j * S * 0.22, sy + S * 0.42 - k * S * 0.6); ctx.stroke(); }
+          for (let j = -1; j <= 1; j++) { ctx.beginPath(); ctx.moveTo(sx + j * S * 0.22, sy - S * 0.42 - lift); ctx.lineTo(sx + j * S * 0.22, sy + S * 0.42 - lift); ctx.stroke(); }
+          // el portón tiene travesaños: es la salida del barrio, no una reja de acertijo
+          if (d.kind === "porton") { ctx.beginPath(); for (const o of [-0.22, 0.22]) { ctx.moveTo(sx - S * 0.36, sy + o * S - lift); ctx.lineTo(sx + S * 0.36, sy + o * S - lift); } ctx.stroke(); }
         }
       }
       if (d.open && open > 0 && open < 1100) {

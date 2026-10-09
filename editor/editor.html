@@ -161,7 +161,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
     T("f", "Fragmento", "#e0b422", "Objetos"), T("k", "Llave", "#e0b422", "Objetos"), T("z", "Zapatillas (objeto)", "#e0b422", "Objetos"),
     T("S", "Inicio", "#38b07a", "Puertas y mecanismos"), T("M", "Meta", "#38b07a", "Puertas y mecanismos"),
     T("H", "Casa (pide la llave)", "#c86fb4", "Puertas y mecanismos"), T("L", "Biblioteca (pide anteojos)", "#c86fb4", "Puertas y mecanismos"),
-    T("E", "Reja de las figuras", "#c86fb4", "Puertas y mecanismos"), T("X", "Grieta (pide el fragmento)", "#c86fb4", "Puertas y mecanismos"),
+    T("E", "Reja de las figuras", "#c86fb4", "Puertas y mecanismos"), T("G", "Portón (se abre al saber leer)", "#c86fb4", "Puertas y mecanismos"), T("X", "Grieta (pide el fragmento)", "#c86fb4", "Puertas y mecanismos"),
     T("1", "Pedestal 1", "#c86fb4", "Puertas y mecanismos"), T("2", "Pedestal 2", "#c86fb4", "Puertas y mecanismos"),
     T("3", "Pedestal 3", "#c86fb4", "Puertas y mecanismos"), T("4", "Pedestal 4", "#c86fb4", "Puertas y mecanismos"),
     T("V", "Vitrina con el sombrero", "#c86fb4", "Puertas y mecanismos"), T("m", "Caja de música", "#c86fb4", "Puertas y mecanismos"),
@@ -348,7 +348,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
     if (!dist || mundo !== "ciudad") { $("distbox").hidden = true; return; }
     const items = [];
     doc().filas.forEach((r, y) => r.forEach((c, x) => {
-      if (!/[copOaleqhfkzCLHVmQX<>]/.test(c)) return;
+      if (!/[copOaleqhfkzCLHVmQXG<>]/.test(c)) return;
       const ds = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => dist.get((x + a) + "," + (y + b))).filter(v => v !== undefined);
       items.push({ x, y, c, d: ds.length ? Math.min(...ds) : null });
     }));
