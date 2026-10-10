@@ -288,7 +288,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   let sparkFx = null, flash = 0, revealUntil = 0, dimUntil = 0, won = false, endGone = false, trans = null, visitedLab = false, readAt = -1;
   let badge = store("punto.insignia") === "1";
   // niveles: al terminar uno se guarda el progreso, y la próxima vez se empieza en el siguiente (?nueva lo borra)
-  let done1 = false, done2 = false, winWorld = null, nivelGanado = 0, nivel2At = 0, extraR = 0, beltNext = 0, chalk = null;
+  let bajarAt = 0, done1 = false, done2 = false, winWorld = null, nivelGanado = 0, nivel2At = 0, extraR = 0, beltNext = 0, chalk = null;
   if (/[?&]nueva\b/.test(location.search)) store("punto.progreso", "");
   const progreso = (() => { if (PRUEBA) return null; try { return JSON.parse(store("punto.progreso") || "null"); } catch (e) { return null; } })();
   if (progreso && progreso.nivel >= 2) {
@@ -449,7 +449,12 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
 
   const tryMove = (dx, dy, now, sliding) => {
     lastMove = now;
-    if (won && now - wonAt > 9000 && !endGone) { endGone = true; endGoneAt = now; }
+    if (won && now - wonAt > 9000 && !endGone) {
+      endGone = true; endGoneAt = now;
+      // al cerrar el resumen del nivel 1, la trampilla se abre bajo tus pies
+      if (nivelGanado === 1 && cur === city && P.x === city.goal.x && P.y === city.goal.y) { bajarAt = now + 1300; sfx.open(); return; }
+    }
+    if (bajarAt) return;
     const nx = P.x + dx, ny = P.y + dy;
     if (!inside(cur, nx, ny)) return bump(now);
     const d = doorAt(cur, nx, ny);
@@ -1271,7 +1276,12 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       if (a > 0.01) {
         const sx = toX(w.goal.x), sy = toY(w.goal.y), pr = reduced ? 1 : 1 + 0.1 * Math.sin(t / 400);
         ctx.strokeStyle = ctx.fillStyle = rgba(0.85 * a);
-        ctx.beginPath(); ctx.arc(sx, sy, S * 0.3 * pr, 0, Math.PI * 2); won ? ctx.fill() : ctx.stroke();
+        if (w === city && done1 && !(won && winWorld === city)) {
+          // la meta del nivel 1, ya cumplida, es una trampilla que baja al galpón
+          const q = S * 0.36 * pr;
+          ctx.fillStyle = "#000"; ctx.fillRect(sx - q, sy - q, q * 2, q * 2); ctx.strokeRect(sx - q, sy - q, q * 2, q * 2);
+          ctx.beginPath(); for (const o of [-0.33, 0.33]) { ctx.moveTo(sx - q, sy + o * q); ctx.lineTo(sx + q, sy + o * q); } ctx.stroke();
+        } else { ctx.beginPath(); ctx.arc(sx, sy, S * 0.3 * pr, 0, Math.PI * 2); won ? ctx.fill() : ctx.stroke(); }
       }
     }
     // ── sombras
@@ -1584,6 +1594,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       const d = [...galpon.doors.values()].find(q => q.kind === "compuerta");
       if (d && d.open !== on && !(cur === galpon && P.x === d.x && P.y === d.y)) { d.open = on; d.openAt = t; if (cur === galpon) sfx.gate(); }
     }
+    if (bajarAt && t >= bajarAt) { bajarAt = 0; won = false; if (!nivel2At) nivel2At = t; teleport(galpon, { ...galpon.start }, t); }
     if (hideAt && t >= hideAt) { flipped.forEach(c => { c.state = "down"; }); flipped = []; hideAt = 0; }
     {
       const ease = k => k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;

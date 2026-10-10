@@ -1,6 +1,6 @@
 # El galpón (nivel 2)
 
-**El nivel 2 del capítulo 1 es un galpón abandonado: mecanismos, ritmo y trampas que te devuelven al inicio, sin quitarte nada.** Se entra por una trampilla que se abre en la meta del nivel 1, dentro de la casa. Sigue siendo la era 1: oscuridad, blanco y negro.
+**El nivel 2 del capítulo 1 es un galpón abandonado: mecanismos, ritmo y trampas que te devuelven al inicio, sin quitarte nada.** Al cerrar el resumen del nivel 1, el primer movimiento abre una trampilla bajo tus pies, en la meta de la casa, y se cae al galpón. La trampilla queda a la vista, para volver si el tobogán te manda a la ciudad. Sigue siendo la era 1: oscuridad, blanco y negro.
 
 ## Recorrido
 
@@ -42,4 +42,4 @@ Al terminar el nivel 1 se guarda el progreso en el navegador: la próxima vez se
 `npm run validar` revisa con BFS que cada tramo se alcance con lo que se tiene en ese momento, que la piedra y el engranaje se puedan tomar sin pisar dos veces una baldosa floja y que no queden casillas aisladas. `npm test` recorre las trampas, la trampilla, el tobogán y el progreso guardado.
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

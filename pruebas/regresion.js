@@ -101,8 +101,8 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
   const nivel = () => ev(() => (JSON.parse(localStorage.getItem('punto.progreso') || 'null') || {}).nivel);
   const enInicio = () => ev(() => __t.cur.name === 'galpon' && __t.P.x === __t.galpon.start.x && __t.P.y === __t.galpon.start.y);
   ok(await nivel() === 2, 'al terminar el nivel 1 se guarda el progreso');
-  await go('L'); await go('R'); await p.waitForTimeout(1300);
-  ok(await ev(() => __t.cur.name) === 'galpon', 'la meta del nivel 1 se vuelve una trampilla que baja al galpón');
+  await p.waitForTimeout(3000); await go('L'); await p.waitForTimeout(2900);
+  ok(await ev(() => __t.cur.name) === 'galpon', 'al cerrar el resumen del nivel 1, la trampilla baja sola al galpón');
   await tp(6, 10); await go('R'); await go('L'); await go('R'); await p.waitForTimeout(1300);
   ok(await enInicio() && await ev(() => __t.stats.caidas) === 1, 'la baldosa floja aguanta una pisada; a la segunda se vuelve al inicio del nivel');
   const comp = () => ev(() => [...__t.galpon.doors.values()].find(d => d.kind === 'compuerta').open);

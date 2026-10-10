@@ -37,7 +37,7 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 ## Cómo está hecho el juego
 
 - **La lógica vive en una grilla y el dibujo es una capa aparte.** Cada mundo es un arreglo de filas de texto; cada carácter es un tipo de casilla, objeto o puerta (ver el `switch` del constructor de mundos).
-- **Niveles:** cada capítulo tiene 3 o 4. Capítulo 1, nivel 1: **ciudad** (61 × 48, calles de 1 casilla) con sus anexos **laberinto** (23 × 17) y **cajas** (35 × 9: empujar cajas, memoria de pares y hielo). Nivel 2: **galpón** (45 × 21) con su **sótano** (25 × 9); se entra por la meta del nivel 1, que se vuelve trampilla.
+- **Niveles:** cada capítulo tiene 3 o 4. Capítulo 1, nivel 1: **ciudad** (61 × 48, calles de 1 casilla) con sus anexos **laberinto** (23 × 17) y **cajas** (35 × 9: empujar cajas, memoria de pares y hielo). Nivel 2: **galpón** (45 × 21) con su **sótano** (25 × 9); al cerrar el resumen del nivel 1 se baja solo por una trampilla en la meta, que después queda visible para volver.
 - **Trampas:** devuelven al inicio del nivel (o el tobogán, al inicio del nivel 1) sin quitar nada de lo tomado ni de lo resuelto. Al caer, las baldosas flojas vuelven a estar sanas.
 - **Progreso:** se guarda en `localStorage` (`punto.progreso`) al terminar cada nivel; al volver se empieza en el nivel siguiente. `?nueva` borra el progreso.
 - **Escala de la ciudad:** calles de 1 casilla y manzanas compactas, como `referencias/ciudad-original-41x32.txt`. Para agrandarla se suman calles, manzanas y barrios; nunca se estira.

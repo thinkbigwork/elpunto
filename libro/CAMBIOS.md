@@ -1,6 +1,15 @@
 # Registro de cambios
 
-Versión actual del libro: **0.25** (2026-10-09).
+Versión actual del libro: **0.26** (2026-10-10).
+
+## 0.26 · La trampilla se ve y se baja sola
+
+_2026-10-10_
+
+- Al cerrar el resumen del nivel 1, el primer movimiento abre la trampilla bajo tus pies y se cae al galpón. Antes había que salir de la meta y volver a pisarla, y nada lo indicaba.
+- La meta de la casa, ya cumplida, se dibuja como una trampilla: se ve para volver si el tobogán te manda a la ciudad.
+
+Páginas: [galpon](niveles/galpon.md)
 
 ## 0.25 · Nivel 2: el galpón
 
