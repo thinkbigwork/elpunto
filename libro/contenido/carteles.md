@@ -20,6 +20,14 @@
 | Galpón, entrada | Lo que suena hueco, cede. |
 | Galpón, campo de baldosas flojas | Cada paso cuenta una vez. |
 | Galpón, junto al tobogán | El camino corto es el más largo. |
+| Galpón, junto a la tiza | Lo que se marca, no se pierde. |
+| Galpón, junto a la cuerda | Lo que se ata, baja. |
+| Galpón, junto a la placa | Lo que pesa, sostiene. |
+| Galpón, antes de la cinta | La cinta no espera. |
+| Galpón, junto al pozo con bajada | No todo pozo es una caída. |
+| Galpón, antes de las prensas | Los golpes tienen su cuenta. |
+| Galpón, junto al montacargas | Al montacargas le falta un diente. |
+| Sótano | Abajo también cede. |
 
 ## Estilo
 
@@ -28,4 +36,4 @@
 - Todos los textos se guardan aparte para poder traducirlos.
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

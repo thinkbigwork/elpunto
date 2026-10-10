@@ -50,6 +50,10 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| Puntos de partida en el galpón: las trampas devuelven al último que pisaste | 10 oct 2026 |
+| Galpón más fácil: prensas más lentas, cinta más lenta, un pozo menos en el campo de baldosas | 10 oct 2026 |
+| Más pistas en carteles y avisos sonoros de peligro (viento, tic, quejido) | 10 oct 2026 |
+| Dos chispas en el galpón: 8 en total, visión máxima 5 | 10 oct 2026 |
 | Cada capítulo tiene 3 o 4 niveles; el cambio de era llega al cerrar el capítulo | 9 oct 2026 |
 | Nivel 2 del capítulo 1: el galpón, con su sótano | 9 oct 2026 |
 | Trampas que devuelven al inicio del nivel, y un tobogán al nivel 1, sin quitar nada | 9 oct 2026 |
@@ -71,4 +75,4 @@
 | Iluminación: 1 al empezar, 0,5 por chispa (4 con las 6 chispas desde el 9 oct) | 1 oct 2026 |
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

@@ -24,6 +24,10 @@
 | Silbido que baja | Te caíste: volvés al inicio del nivel | En prototipo |
 | Golpe metálico con ritmo | Una prensa | En prototipo |
 | Roce de cuerda | Bajaste por el pozo | En prototipo |
+| Viento | Hay un pozo cerca | En prototipo |
+| Tic | Una prensa está por bajar | En prototipo |
+| Quejido de madera | Al lado hay una baldosa floja que ya cedió | En prototipo |
+| Acorde corto de tres notas | Encendiste un punto de partida | En prototipo |
 
 ## Ambientes
 
@@ -34,4 +38,4 @@ Cada mundo tiene un fondo propio: zumbido grave y estable en la ciudad, disonant
 Cada sonido-señal necesita una alternativa visual. Ver [Accesibilidad](../tecnica/accesibilidad.md).
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

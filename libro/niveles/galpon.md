@@ -14,26 +14,39 @@
 6. **Sótano.** Tres baldosas flojas sobre pozos, el engranaje y una escalera al fondo, que sube junto al pozo.
 7. **Prensas y montacargas.** Tres prensas golpean con ritmo, cada una a destiempo. El montacargas se arregla con el engranaje y sube a la meta del nivel.
 
+## Puntos de partida
+
+Tres baldosas con una banderita: a la entrada del campo de baldosas flojas, frente a la compuerta y antes de las prensas. Al pisarlas se encienden con un acorde corto. Bajar al sótano y subir de él también guardan el lugar. Las trampas te devuelven al último punto de partida, no a la entrada: equivocarse cuesta unos pasos, no el nivel entero.
+
 ## Trampas
 
 Las trampas mueven al jugador, pero no le quitan nada: lo tomado y lo resuelto (la piedra puesta, el montacargas arreglado) se conservan. Al caer, las baldosas flojas vuelven a estar sanas.
 
 | Trampa | Aviso | Te manda a |
 | --- | --- | --- |
-| Baldosa floja | Cruje y se agrieta a la primera pisada | Inicio del nivel 2, a la segunda pisada |
-| Pozo | Borde punteado | Inicio del nivel 2 (salvo la bajada, con la cuerda) |
-| Cinta | Chevrones que avanzan y un motor grave | Al pozo del final si no te bajás a tiempo |
-| Prensa | Golpe metálico con ritmo; la baldosa se oscurece antes de bajar | Inicio del nivel 2. El escudo la aguanta una vez |
+| Baldosa floja | Se dibuja como tablas sueltas; cruje y se agrieta a la primera pisada; al lado de una ya rota se oye un quejido de madera | Último punto de partida, a la segunda pisada |
+| Pozo | Borde punteado y viento al acercarse | Último punto de partida (salvo la bajada, con la cuerda) |
+| Cinta | Chevrones que avanzan y un motor grave; una casilla cada 0,28 s | Al pozo del final si no te bajás a tiempo |
+| Prensa | Golpe metálico con ritmo, un tic medio segundo antes y la baldosa se oscurece. Baja 0,55 s cada 2,8 s | Último punto de partida. El escudo la aguanta una vez |
 | Tobogán | Un cartel al lado | La plaza del inicio del nivel 1 |
 
 ## Objetos nuevos
 
 | Objeto | Para qué |
 | --- | --- |
-| Tiza | Quedarse quieto un momento marca el piso con una cruz (o la borra). No es obligatoria |
+| Tiza | Quedarse quieto tres segundos marca el piso con una cruz (o la borra). No es obligatoria |
+| Chispas | Dos: una en el medio del depósito y otra en el sótano |
 | Cuerda | Con ella, el pozo con bajada lleva al sótano en lugar de hacerte caer |
 | Piedra | Pisar la placa llevándola la deja encima: la compuerta queda abierta |
 | Engranaje | Arregla el montacargas |
+
+## Carteles
+
+Nueve en el galpón y uno en el sótano. Dan pistas de costado, sin instrucciones: "Lo que se marca, no se pierde." (tiza), "Lo que se ata, baja." (cuerda), "Lo que pesa, sostiene." (piedra y placa), "La cinta no espera.", "No todo pozo es una caída.", "Los golpes tienen su cuenta." (prensas), "Al montacargas le falta un diente." (engranaje) y, en el sótano, "Abajo también cede."
+
+## Cómo se juega (prueba del 10 oct 2026)
+
+Un jugador automático que usa solo el teclado lo terminó en un minuto, sin caídas, tomando las dos chispas. Una persona que no conoce el mapa tarda bastante más: el depósito a oscuras es lo más largo. Lo que encontró la prueba y ya se corrigió: las baldosas sanas parecían tildadas (✓) y después se confundían con pozos, y la tiza marcaba el piso cada vez que uno se quedaba quieto a pensar.
 
 ## Progreso
 

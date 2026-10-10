@@ -13,7 +13,7 @@
 | Anteojos | Se arman en el crisol; abren la biblioteca, donde está el libro | En prototipo |
 | Cuerda | Con ella, el pozo con bajada del galpón lleva al sótano en lugar de hacerte caer. Escalar sin esperar y unir cosas siguen propuestos | En prototipo |
 | Piedra | Trabar una placa: pisarla llevando la piedra la deja encima. Hacer ruido para distraer sigue propuesto | En prototipo |
-| Tiza | Quedarse quieto un momento marca el piso con una cruz, o la borra. Que la vean otros sigue propuesto | En prototipo |
+| Tiza | Quedarse quieto tres segundos marca el piso con una cruz, o la borra. Que la vean otros sigue propuesto | En prototipo |
 | Fósforo | Mucha luz por pocos segundos | Propuesto |
 | Engranaje | Arregla el montacargas del galpón | En prototipo |
 | Semilla | Crece en tierra mojada: árbol para trepar o cruzar | Propuesto |
@@ -21,4 +21,4 @@
 | Mapa | Se arma por hojas: cada hoja muestra el contorno de una zona ya recorrida, para planear sin depender solo de la memoria | Propuesto (próximos capítulos) |
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

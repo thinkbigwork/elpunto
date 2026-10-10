@@ -1,6 +1,18 @@
 # Registro de cambios
 
-Versión actual del libro: **0.27** (2026-10-10).
+Versión actual del libro: **0.28** (2026-10-10).
+
+## 0.28 · Un galpón más amable
+
+_2026-10-10_
+
+- Puntos de partida: tres baldosas con banderita (campo, compuerta, prensas), más la bajada y la subida del sótano. Las trampas devuelven al último pisado, no a la entrada.
+- Más fácil: las prensas bajan 0,55 s cada 2,8 s (antes 0,7 cada 2,4), la cinta va a una casilla cada 0,28 s (antes 0,2) y el campo de baldosas flojas tiene un pozo menos.
+- Dos chispas nuevas, en el depósito y en el sótano: 8 en total, visión máxima 5.
+- Ocho carteles nuevos con pistas de costado, y avisos sonoros: viento cerca de un pozo, un tic antes de que baje una prensa y un quejido junto a una baldosa ya rota.
+- La prueba jugada encontró y se corrigió: las baldosas flojas parecían tildadas (ahora son tablas sueltas, distintas de un pozo) y la tiza marcaba el piso al quedarse quieto a pensar (ahora pide tres segundos).
+
+Páginas: [galpon](niveles/galpon.md), [terreno](contenido/terreno.md), [objetos](contenido/objetos.md), [carteles](contenido/carteles.md), [sonido](arte-audio/sonido.md), [reglas](jugabilidad/reglas.md), [glosario](vision/glosario.md), [eras-visuales](arte-audio/eras-visuales.md), [decisiones](produccion/decisiones.md)
 
 ## 0.27 · Link directo al nivel 2
 

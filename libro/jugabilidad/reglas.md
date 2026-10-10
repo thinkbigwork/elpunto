@@ -19,7 +19,7 @@
 | Acertijo | Se reinicia. Muchos errores seguidos "enfrían" el mecanismo un rato |
 | Contrarreloj | Se reinicia el desafío |
 | Alquimia | Perdés los materiales: queda ceniza |
-| Trampa del nivel (baldosa floja, pozo, cinta, prensa) | Volvés al inicio del nivel. Conservás lo tomado y lo resuelto; las baldosas flojas vuelven a estar sanas. El escudo aguanta una prensa |
+| Trampa del nivel (baldosa floja, pozo, cinta, prensa) | Volvés al último punto de partida que pisaste (o al inicio del nivel). Conservás lo tomado y lo resuelto; las baldosas flojas vuelven a estar sanas. El escudo aguanta una prensa |
 | Tobogán | Volvés a la plaza del inicio del nivel 1, sin perder nada; el camino a la casa queda abierto |
 | Exploración | Sin castigo |
 
@@ -41,4 +41,4 @@
 - Nada que se construye queda mal para siempre: con la barreta, una tabla puesta se levanta y se vuelve a usar.
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

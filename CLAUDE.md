@@ -38,13 +38,13 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 
 - **La lógica vive en una grilla y el dibujo es una capa aparte.** Cada mundo es un arreglo de filas de texto; cada carácter es un tipo de casilla, objeto o puerta (ver el `switch` del constructor de mundos).
 - **Niveles:** cada capítulo tiene 3 o 4. Capítulo 1, nivel 1: **ciudad** (61 × 48, calles de 1 casilla) con sus anexos **laberinto** (23 × 17) y **cajas** (35 × 9: empujar cajas, memoria de pares y hielo). Nivel 2: **galpón** (45 × 21) con su **sótano** (25 × 9); al cerrar el resumen del nivel 1 se baja solo por una trampilla en la meta, que después queda visible para volver.
-- **Trampas:** devuelven al inicio del nivel (o el tobogán, al inicio del nivel 1) sin quitar nada de lo tomado ni de lo resuelto. Al caer, las baldosas flojas vuelven a estar sanas.
+- **Trampas:** devuelven al último punto de partida (`B`) que se pisó, o al inicio del nivel (el tobogán, al inicio del nivel 1), sin quitar nada de lo tomado ni de lo resuelto. Al caer, las baldosas flojas vuelven a estar sanas.
 - **Progreso:** se guarda en `localStorage` (`punto.progreso`) al terminar cada nivel; al volver se empieza en el nivel siguiente. `?nueva` borra el progreso; `?nivel=2` empieza en el galpón con el libro y el sombrero, sin leer ni guardar progreso.
 - **Escala de la ciudad:** calles de 1 casilla y manzanas compactas, como `referencias/ciudad-original-41x32.txt`. Para agrandarla se suman calles, manzanas y barrios; nunca se estira.
 - **Leer primero:** la ciudad empieza en el medio, en un barrio central cerrado con todo lo necesario para leer. Sus salidas son portones `G` que se abren al llegar al lado con el libro. Nada necesario para leer puede quedar afuera, y nada de afuera puede alcanzarse sin el libro (lo revisa `npm run validar:ciudad`).
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
 - Cazadores: buscan camino con BFS; quedan encerrados si no hay camino hasta el jugador.
-- Visión: radio base 1, cada chispa suma 0,5 (6 chispas → 4). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
+- Visión: radio base 1, cada chispa suma 0,5 (nivel 1: 6 chispas → 4; con las 2 del galpón → 5). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
 - Los puntos de regreso se calculan desde el mapa: al salir del laberinto, debajo de la grieta; al volver de Cajas, a la izquierda del portal `Q`.
 - Modo prueba: con `?prueba` el juego reemplaza un mundo por el que dejó el editor en `localStorage` (`punto.prueba`). Es parte del juego, no un gancho de prueba como `window.__t`.
 - Si llega un mapa exportado del editor: reemplazar el arreglo y las claves de `CARTELES` de ese mundo, correr `npm run validar` (si es la ciudad, el galpón o el sótano) y `npm test`, y actualizar el libro.

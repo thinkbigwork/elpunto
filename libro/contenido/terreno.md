@@ -27,19 +27,20 @@
 | Carta | Se da vuelta al pisarla (cuarto de memoria) | En prototipo |
 | Baldosas de zapatillas | Flechas hacia un lado: más velocidad; hacia el otro: velocidad normal. Fijas, siempre en el mismo lugar | En prototipo |
 | Bloque del laberinto | Pieza con flechas que se empuja; bien puesta, deja a los cazadores sin salida | En prototipo |
-| Baldosa floja | Aguanta una pisada; a la segunda se cae. Vuelve a estar sana al reiniciar el nivel | En prototipo |
-| Prensa | Baja y sube con ritmo; si te agarra, volvés al inicio del nivel | En prototipo |
+| Baldosa floja | Tablas sueltas: aguantan una pisada; a la segunda se cae. Vuelven a estar sanas al caer | En prototipo |
+| Prensa | Baja 0,55 s cada 2,8 s, con un tic de aviso; si te agarra, volvés al último punto de partida | En prototipo |
 | Compuerta | La abre una placa de presión | En prototipo |
 | Montacargas | Se arregla con un engranaje y lleva a la meta del galpón | En prototipo |
 | Tobogán | Trampa: te devuelve al inicio del nivel 1 | En prototipo |
+| Punto de partida | Baldosa con una banderita: al pisarla, las trampas del nivel te devuelven ahí | En prototipo |
 | Escalera del sótano | Sube al galpón, junto al pozo por el que se bajó | En prototipo |
 | Escalera | Cambia de piso (con la vista isométrica) | Propuesto |
 | Pasto alto | Te oculta de las sombras | Propuesto |
 | Pozo | Caer te devuelve al inicio del nivel. Con la cuerda, el pozo con bajada lleva al sótano | En prototipo |
 | Puerta de un solo sentido | Pasa en una dirección | Propuesto |
 | Placa de presión | Abre la compuerta mientras algo la pisa: vos o una piedra | En prototipo |
-| Cinta | Te lleva una casilla cada 0,2 s en su dirección; en el galpón termina en un pozo | En prototipo |
+| Cinta | Te lleva una casilla cada 0,28 s en su dirección; en el galpón termina en un pozo | En prototipo |
 | Niebla | Reduce la visión | Propuesto |
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

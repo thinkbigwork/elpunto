@@ -7,7 +7,8 @@
 | Temporada | El arco completo de juego, con su final. La primera es *El Despertar* |
 | Capítulo | Una parte de la historia, con título propio y su era visual. Tiene 3 o 4 niveles y se abre en una fecha fija |
 | Nivel | Un mapa con sus mundos anexos, dentro de un capítulo. Al terminarlo se guarda el progreso |
-| Trampa | Lo que te devuelve al inicio del nivel (o del nivel 1) sin quitarte nada |
+| Trampa | Lo que te devuelve al último punto de partida (o al nivel 1) sin quitarte nada |
+| Punto de partida | Baldosa que, al pisarla, se vuelve el lugar al que te devuelven las trampas del nivel |
 | Zona | Una parte de un mapa con su propio problema central |
 | Desafío | Un obstáculo puntual: una puerta, un cruce, un acertijo |
 | Mapa base | El lugar principal de un capítulo (una ciudad, un edificio) |
@@ -21,4 +22,4 @@
 | Llegar | Completar el camino principal y descubrir en quién te convertiste |
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_
