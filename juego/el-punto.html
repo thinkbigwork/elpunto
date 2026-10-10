@@ -30,6 +30,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   // R  refugio        !  "no es por aquí"                  T  cartel
   // c chispa · p tabla · f fragmento · k llave · l libro · z zapatillas · e escudo · h sombrero
   // G portón (se abre al saber leer) · H puerta de casa · E reja · X grieta · 1 2 3 pedestales · M meta · A portal · K pista · S inicio
+  // nivel 2: ? baldosa floja · 0 pozo · U pozo con bajada (con cuerda) · * prensa · _ placa · D compuerta · ( ) { } cintas
+  //          Y montacargas · @ tobogán (vuelve al nivel 1) · I escalera · t tiza · s cuerda · g piedra · w engranaje
   const CIUDAD = [
     "#############################################################",
     "#!##########................................................#",
@@ -110,6 +112,40 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     "###########.j.j.j.j.#ririiriii#####",
     "###################################"
   ];
+  const GALPON = [
+    "#############################################",
+    "########t.#...#....#.?????#..........#......#",
+    "########..#.#.#.#....?0???#.######.._#......#",
+    "########..#.#.#.#..#.??g??#.######...#..M...#",
+    "########..#.#.#.#..#T???0?..######...#......#",
+    "########..#.#.#.#..#.?0???#.######...#......#",
+    "########..#.#.#.#..########.######...#......#",
+    "########..#.#.#.#..########.######...#......#",
+    "#......#..#.#.#.#..########..........######Y#",
+    "#....T.#..#.#.#.#..#############.##########.#",
+    "#.S....?..#.#.#.#..#############D##########.#",
+    "#......#..#.#.#.#..#########........T@#####.#",
+    "#......#..#.#.#.#..#########.........######.#",
+    "########..#.#.#.#..#########0{{{{{{{{######.#",
+    "########..#.#.#.#..#########0{{{{{{{{######.#",
+    "########..#.#.#.#..#########.........######.#",
+    "########..#.#.#.#..#########.........######.#",
+    "########..#.#.#.#..#########...U......*.*.*.#",
+    "########..#.#.#.#..#########.........########",
+    "########....#...#.s#########.........########",
+    "#############################################"
+  ];
+  const SOTANO = [
+    "#########################",
+    "#....00000000000000.....#",
+    "#....00000000000000.....#",
+    "#.......0...?.0.........#",
+    "#.S......?.0...?.0...w.I#",
+    "#.......0...?.0.........#",
+    "#....00000000000000.....#",
+    "#....00000000000000.....#",
+    "#########################"
+  ];
   const CARTELES = {
     ciudad: {
       "30,21": "Lo que se ve no es todo lo que hay.",
@@ -124,16 +160,22 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     cajas: {
       "31,3": "Acá todo se ve. Lo difícil era otra cosa."
     },
+    galpon: {
+      "5,9": "Lo que suena hueco, cede.",
+      "20,4": "Cada paso cuenta una vez.",
+      "36,11": "El camino corto es el más largo."
+    },
+    sotano: {},
     laberinto: {
       "3,1": "Lo que abre está donde nadie quiere ir.",
       "19,9": "Lo que encierra también protege."
     }
   };
-  const ITEM_CH = { c: "chispa", p: "tabla", f: "fragmento", k: "llave", l: "libro", z: "zapatillas", e: "escudo", h: "sombrero", q: "barreta", o: "lente", a: "armazon" };
-  const POWERS = ["libro", "zapatillas", "escudo", "sombrero", "barreta"];
+  const ITEM_CH = { c: "chispa", p: "tabla", f: "fragmento", k: "llave", l: "libro", z: "zapatillas", e: "escudo", h: "sombrero", q: "barreta", o: "lente", a: "armazon", t: "tiza", s: "cuerda", g: "piedra", w: "engranaje" };
+  const POWERS = ["libro", "zapatillas", "escudo", "sombrero", "barreta", "cuerda", "tiza"];
 
   const parse = (name, rows) => {
-    const w = { name, W: rows[0].length, H: rows.length, grid: rows.map(r => r.split("")), items: [], doors: new Map(), peds: [], clues: [], enemies: [], lanes: [], signs: [], alarm: [], calm: [], notes: [], boxes: [], cards: [] };
+    const w = { name, W: rows[0].length, H: rows.length, grid: rows.map(r => r.split("")), items: [], doors: new Map(), peds: [], clues: [], enemies: [], lanes: [], signs: [], alarm: [], calm: [], notes: [], boxes: [], cards: [], prensas: [], belts: [], rotas: new Set(), marks: new Set() };
     for (let y = 0; y < w.H; y++) for (let x = 0; x < w.W; x++) {
       const ch = w.grid[y][x], key = x + "," + y;
       const door = (kind, need, consume) => w.doors.set(key, { x, y, kind, need, consume, open: false, openAt: -1e9, shakeAt: -1e9 });
@@ -154,6 +196,14 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         case "L": door("casa", "anteojos", true); break;
         case "E": door("reja", "orden", false); break;
         case "G": door("porton", "libro", false); break;
+        case "D": door("compuerta", "piedra", false); break;
+        case "Y": door("montacargas", "engranaje", true); break;
+        case "U": w.bajada = { x, y }; break;
+        case "*": w.prensas.push({ x, y, off: w.prensas.length * 800, closed: false }); break;
+        case "_": w.placa = { x, y, stone: false }; break;
+        case "(": case ")": case "{": case "}": w.belts.push({ x, y }); break;
+        case "@": w.tobogan = { x, y }; break;
+        case "I": w.escalera = { x, y }; break;
         case "X": door("grieta", "fragmento", true); break;
         case "1": case "2": case "3": case "4": w.peds.push({ x, y, lit: false }); w.grid[y][x] = ","; break;
         case "M": w.goal = { x, y }; w.grid[y][x] = ","; break;
@@ -177,6 +227,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const city = mapa("ciudad", CIUDAD);
   const lab = mapa("laberinto", LABERINTO);
   const cajas = mapa("cajas", CAJAS);
+  const galpon = mapa("galpon", GALPON);
+  const sotano = mapa("sotano", SOTANO);
   cajas.lit = true;
   lab.enemies.push({ x: 13, y: 13, min: 13, max: 19, d: 1 }, { x: 21, y: 11, min: 15, max: 21, d: -1 });
   city.lanes.push(
@@ -195,6 +247,9 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   // al salir del laberinto se aparece debajo de la grieta; al volver de Cajas, a la izquierda del portal
   const CITY_RETURN = (g => ({ x: g.x, y: g.y + 1 }))([...city.doors.values()].find(d => d.kind === "grieta"));
   const CAJAS_RETURN = { x: city.qportal.x - 1, y: city.qportal.y };
+  // al subir la escalera del sótano se aparece a la izquierda del pozo por el que se bajó
+  const SOTANO_RETURN = { x: galpon.bajada.x - 1, y: galpon.bajada.y };
+  const BELT = { "(": [0, -1], ")": [0, 1], "{": [-1, 0], "}": [1, 0] }, BELT_MS = 200, PRENSA_MS = 2400, PRENSA_CLOSED = 700;
 
   // ═════════════════ Semilla propia de cada jugador ═════════════════
   const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
@@ -222,14 +277,35 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const P = { x: city.start.x, y: city.start.y };
   if (PRUEBA && PRUEBA.mundo === "laberinto") { cur = lab; P.x = lab.portal.x; P.y = lab.portal.y; }
   if (PRUEBA && PRUEBA.mundo === "cajas") { cur = cajas; P.x = cajas.start.x; P.y = cajas.start.y; }
+  if (PRUEBA && PRUEBA.mundo === "galpon") { cur = galpon; P.x = galpon.start.x; P.y = galpon.start.y; }
+  if (PRUEBA && PRUEBA.mundo === "sotano") { cur = sotano; P.x = sotano.start.x; P.y = sotano.start.y; }
   const dp = { x: P.x, y: P.y };
-  const inv = { fragmento: 0, llave: 0, lente: 0, armazon: 0, anteojos: 0, tabla: 0 };
+  const inv = { fragmento: 0, llave: 0, lente: 0, armazon: 0, anteojos: 0, tabla: 0, piedra: 0, engranaje: 0 };
   const powers = new Set();
-  let stats = { trapped: 0, hits: 0, built: 0, crafted: 0, cajas1: false, hielo: false, escaped: false }, labAwake = false, labCalm = false, hunters = [], hunterClock = 0, shakeUntil = 0, chaseStep = 0, nextChase = 0;
+  let stats = { trapped: 0, hits: 0, built: 0, crafted: 0, cajas1: false, hielo: false, escaped: false, caidas: 0, tobogan: 0 }, labAwake = false, labCalm = false, hunters = [], hunterClock = 0, shakeUntil = 0, chaseStep = 0, nextChase = 0;
   let shield = 0, stuck = false, zoomE = 0, climb = null, lift = null, slide = null, mseq = [], mCool = 0, flipped = [], hideAt = 0, stuckSince = 0, crafts = [], endGoneAt = 0, prev = { x: 0, y: 0 }, labOpen = false, seq = [], coolUntil = 0, startAt = 0, wonAt = 0, endShown = false;
   let awake = false, R = 0, targetR = 0, progress = 0, lastMove = 0, lastBump = 0, lastDeny = 0, invulnUntil = 0;
   let sparkFx = null, flash = 0, revealUntil = 0, dimUntil = 0, won = false, endGone = false, trans = null, visitedLab = false, readAt = -1;
   let badge = store("punto.insignia") === "1";
+  // niveles: al terminar uno se guarda el progreso, y la próxima vez se empieza en el siguiente (?nueva lo borra)
+  let done1 = false, done2 = false, winWorld = null, nivelGanado = 0, nivel2At = 0, extraR = 0, beltNext = 0, chalk = null;
+  if (/[?&]nueva\b/.test(location.search)) store("punto.progreso", "");
+  const progreso = (() => { if (PRUEBA) return null; try { return JSON.parse(store("punto.progreso") || "null"); } catch (e) { return null; } })();
+  if (progreso && progreso.nivel >= 2) {
+    done1 = true; done2 = progreso.nivel >= 3;
+    cur = galpon; P.x = dp.x = galpon.start.x; P.y = dp.y = galpon.start.y;
+    (progreso.poderes || []).forEach(p => powers.add(p)); if (powers.has("escudo")) shield = 1;
+    extraR = (progreso.chispas || 0) * SPARK_R;
+    // el nivel 1 queda como lo dejaste: lo tomado, tomado; las puertas del camino a la casa, abiertas
+    for (const w of [city, lab, cajas]) w.items.forEach(i => { i.taken = true; });
+    city.doors.forEach(d => { if (d.kind !== "grieta") d.open = true; });
+    labOpen = labCalm = true;
+  }
+  const guardar = nivel => {
+    if (PRUEBA) return;
+    const chispas = [city, lab, cajas].flatMap(w => w.items).filter(i => i.kind === "chispa" && i.taken).length;
+    store("punto.progreso", JSON.stringify({ nivel, poderes: [...powers], chispas: Math.max(chispas, progreso ? progreso.chispas || 0 : 0) }));
+  };
   const pickups = [], ghosts = [], builds = [];
   let enemyClock = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -263,7 +339,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     const g = ac.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(f).connect(g).connect(ac.destination); src.start(t0, Math.random()); src.stop(t0 + dur + 0.05);
   };
-  const DRONES = { ciudad: [55, 82.4], laberinto: [58.3, 61.9], cajas: [98, 98.4] };
+  const DRONES = { ciudad: [55, 82.4], laberinto: [58.3, 61.9], cajas: [98, 98.4], galpon: [49, 73.4], sotano: [41.2, 61.7] };
   const startLayers = () => {
     if (!ac || layers) return;
     const len = ac.sampleRate * 2, noise = ac.createBuffer(1, len, ac.sampleRate), d = noise.getChannelData(0);
@@ -320,6 +396,14 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     fast: () => { tone(300, 0.35, { to: 900, vol: 0.05 }); noiseBurst(0.25, 3000, 0.06); },
     slow: () => tone(700, 0.4, { to: 220, vol: 0.05 }),
     trapped: () => { [0, 0.12].forEach(d => tone(140, 0.12, { type: "square", vol: 0.06, delay: d })); tone(880, 0.9, { to: 440, vol: 0.04, delay: 0.3, type: "triangle" }); },
+    crack: () => { noiseBurst(0.12, 2400, 0.12); tone(180, 0.12, { type: "square", vol: 0.02 }); },
+    fall: () => { tone(600, 1.1, { to: 60, vol: 0.06, type: "triangle" }); noiseBurst(0.6, 300, 0.12, 0.9); },
+    thump: v => { tone(52, 0.25, { type: "square", vol: v, to: 38 }); noiseBurst(0.08, 900, v * 2); },
+    stone: () => { tone(140, 0.15, { type: "square", vol: 0.05 }); noiseBurst(0.1, 700, 0.1); },
+    gate: () => tone(120, 0.35, { type: "sawtooth", to: 180, vol: 0.025 }),
+    chute: () => { tone(900, 1.6, { to: 120, vol: 0.05, type: "triangle" }); noiseBurst(1.2, 1800, 0.06); },
+    chalk: () => noiseBurst(0.18, 4200, 0.05),
+    rope: () => { [0, 0.15, 0.3].forEach(d => noiseBurst(0.08, 1400, 0.06, d)); tone(300, 0.8, { to: 150, vol: 0.03, delay: 0.1 }); },
     win: () => [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 2.6 - i * 0.2, { vol: 0.045, delay: i * 0.16 }))
   };
 
@@ -328,7 +412,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const inside = (w, x, y) => x >= 0 && y >= 0 && x < w.W && y < w.H;
   const wake = now => {
     if (awake) return;
-    awake = true; targetR = BASE_R; lastMove = now; startAt = now; audio(); sfx.wake(); startLayers();
+    awake = true; targetR = BASE_R + extraR; lastMove = now; startAt = now; if (cur === galpon) nivel2At = now; audio(); sfx.wake(); startLayers();
   };
   const deny = (x, y, need, now, shakeObj) => {
     if (shakeObj) shakeObj.shakeAt = now;
@@ -340,7 +424,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   const canPass = (w, x, y) => {
     if (!inside(w, x, y)) return false;
     const c = w.grid[y][x], d = doorAt(w, x, y);
-    return !"#r~b^%".includes(c) && !boxAt(w, x, y) && !(d && !d.open);
+    return !"#r~b^%0U".includes(c) && !boxAt(w, x, y) && !(d && !d.open);
   };
   const resetRoom = now => {
     cajas.boxes.forEach(b => { b.x = b.x0; b.y = b.y0; });
@@ -370,6 +454,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     if (!inside(cur, nx, ny)) return bump(now);
     const d = doorAt(cur, nx, ny);
     if (d && !d.open) {
+      if (d.kind === "compuerta") { deny(nx, ny, "piedra", now, d); return; }
       if (d.need !== "orden" && (d.need === "libro" ? powers.has("libro") : has(d.need))) {
         d.open = true; d.openAt = now;
         if (d.consume) inv[d.need]--;
@@ -379,6 +464,12 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     }
     const c = cur.grid[ny][nx];
     if (c === "#" || c === "r") return sliding ? null : bump(now);
+    if (c === "*" && prensaCerrada(cur.prensas.find(q => q.x === nx && q.y === ny), now)) return sliding ? null : bump(now);
+    if (c === "0" || c === "U") {
+      // un pozo: con la cuerda, el de la bajada lleva al sótano; si no, se cae y se vuelve al inicio del nivel
+      if (c === "U" && powers.has("cuerda")) { sfx.rope(); teleport(sotano, { ...sotano.start }, now, true); return; }
+      return caer(now);
+    }
     const box = boxAt(cur, nx, ny);
     if (box) {
       const tx = nx + dx, ty = ny + dy;
@@ -405,7 +496,26 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     if (!trans && cur.grid[P.y][P.x] === "i" && canPass(cur, P.x + dx, P.y + dy)) { if (!sliding) sfx.slide(); slide = { dx, dy, next: now + 55 }; }
     checkStuck();
   };
-  const teleport = (to, pos, now) => { trans = { start: now, to, pos, switched: false }; climb = null; sfx.portal(); };
+  const teleport = (to, pos, now, silent) => { trans = { start: now, to, pos, switched: false }; climb = null; slide = null; if (!silent) sfx.portal(); };
+  const prensaCerrada = (pr, t) => !!pr && (t + pr.off) % PRENSA_MS < PRENSA_CLOSED;
+  const resetFlojas = () => { galpon.rotas.clear(); sotano.rotas.clear(); };
+  // las trampas mueven, pero no quitan: lo tomado y lo resuelto se conserva
+  const caer = now => {
+    if (trans) return;
+    stats.caidas++; sfx.fall(); flash = 0.35; dimUntil = now + 1200; resetFlojas();
+    teleport(galpon, { ...galpon.start }, now, true);
+  };
+  const aplastar = now => {
+    if (now < invulnUntil || trans) return;
+    const had = shield > 0; hurt(now, galpon.start); if (!had) resetFlojas();
+  };
+  const ganar = (nivel, now) => {
+    won = true; wonAt = now; winWorld = cur; nivelGanado = nivel; endGone = false; endShown = false;
+    badge = true; if (!PRUEBA) store("punto.insignia", "1");
+    revealUntil = now + 9500; sfx.win();
+    if (nivel === 1) { done1 = true; targetR += SPARK_R; guardar(2); }
+    if (nivel === 2) { done2 = true; guardar(3); }
+  };
   const hurt = (now, respawn) => {
     if (now < invulnUntil || trans) return;
     invulnUntil = now + 900;
@@ -414,6 +524,8 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     P.x = respawn.x; P.y = respawn.y;
   };
   const enter = now => {
+    // baldosa floja: aguanta una pisada; a la segunda, se cae
+    if (cur.grid[P.y][P.x] === "?") { const k = P.x + "," + P.y; if (cur.rotas.has(k)) return caer(now); cur.rotas.add(k); sfx.crack(); }
     for (const it of cur.items) if (!it.taken && it.x === P.x && it.y === P.y) {
       it.taken = true;
       if (it.kind === "chispa") { targetR += SPARK_R; sparkFx = { t: now, to: targetR }; sfx.spark(); sfx.grow(); continue; }
@@ -430,6 +542,10 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     if (cur.grid[P.y][P.x] === "R" && powers.has("escudo") && shield === 0) { shield = 1; sfx.shieldBack(); }
     if (cur.grid[P.y][P.x] === ">" && !powers.has("zapatillas")) { powers.add("zapatillas"); sfx.fast(); }
     if (cur.grid[P.y][P.x] === "<" && powers.has("zapatillas")) { powers.delete("zapatillas"); sfx.slow(); }
+    if (cur.placa && P.x === cur.placa.x && P.y === cur.placa.y && !cur.placa.stone && inv.piedra > 0) { inv.piedra--; cur.placa.stone = true; sfx.stone(); }
+    if (cur.tobogan && P.x === cur.tobogan.x && P.y === cur.tobogan.y) { stats.tobogan++; resetFlojas(); sfx.chute(); teleport(city, { ...city.start }, now, true); return; }
+    if (cur.escalera && P.x === cur.escalera.x && P.y === cur.escalera.y) { teleport(galpon, { ...SOTANO_RETURN }, now); return; }
+    if (cur === galpon && !done2 && P.x === galpon.goal.x && P.y === galpon.goal.y) ganar(2, now);
     if (cur.qportal && P.x === cur.qportal.x && P.y === cur.qportal.y) {
       if (cur === city) teleport(cajas, { x: cajas.start.x, y: cajas.start.y }, now);
       else teleport(city, { ...CAJAS_RETURN }, now);
@@ -485,9 +601,10 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       }
       const g = doorAt(city, P.x, P.y);
       if (g && g.kind === "grieta" && g.open) teleport(lab, { x: lab.portal.x, y: lab.portal.y }, now);
-      if (!won && P.x === city.goal.x && P.y === city.goal.y) {
-        won = true; wonAt = now; badge = true; if (!PRUEBA) store("punto.insignia", "1");
-        revealUntil = now + 9500; targetR += SPARK_R; sfx.win();
+      if (P.x === city.goal.x && P.y === city.goal.y) {
+        // la meta del nivel 1 se vuelve una trampilla que baja al galpón
+        if (!done1) ganar(1, now);
+        else { won = false; if (!nivel2At) nivel2At = now; teleport(galpon, { ...galpon.start }, now); }
       }
     } else if (cur === lab && P.x === lab.portal.x && P.y === lab.portal.y) {
       if (labOpen) { if (labAwake) { labAwake = false; labCalm = true; hunters = []; stats.escaped = true; } teleport(city, { ...CITY_RETURN }, now); }
@@ -701,6 +818,18 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       case "pares":
         ctx.strokeRect(x - r * 0.95, y - r * 0.6, r * 0.8, r * 1.2); ctx.strokeRect(x + r * 0.15, y - r * 0.6, r * 0.8, r * 1.2);
         ctx.lineWidth = Math.max(1, r * 0.1); shape("estrella", x - r * 0.55, y, r * 0.22, false); shape("estrella", x + r * 0.55, y, r * 0.22, false); break;
+      case "tiza":
+        P2([[-0.75, 0.45], [0.45, -0.75], [0.75, -0.45], [-0.45, 0.75]], true); ctx.stroke(); break;
+      case "cuerda":
+        ctx.beginPath(); ctx.ellipse(x, y, r * 0.75, r * 0.5, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(x, y, r * 0.45, r * 0.28, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x + r * 0.75, y); ctx.quadraticCurveTo(x + r, y + r * 0.6, x + r * 0.5, y + r * 0.95); ctx.stroke(); break;
+      case "piedra":
+        P2([[-0.7, 0.3], [-0.45, -0.4], [0.1, -0.6], [0.65, -0.25], [0.7, 0.35], [0.15, 0.6], [-0.4, 0.55]], true); hollow ? ctx.stroke() : (ctx.globalAlpha *= 0.5, ctx.fill(), ctx.globalAlpha /= 0.5, ctx.stroke()); break;
+      case "engranaje":
+        ctx.beginPath(); ctx.arc(x, y, r * 0.55, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, r * 0.2, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); for (let k = 0; k < 8; k++) { const an = k * Math.PI / 4; ctx.moveTo(x + Math.cos(an) * r * 0.55, y + Math.sin(an) * r * 0.55); ctx.lineTo(x + Math.cos(an) * r * 0.9, y + Math.sin(an) * r * 0.9); } ctx.stroke(); break;
       case "barreta":
         P2([[-0.85, 0.85], [0.45, -0.45], [0.55, -0.75], [0.85, -0.85]]); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(x - r * 0.85, y + r * 0.85); ctx.lineTo(x - r * 0.95, y + r * 0.55); ctx.stroke(); break;
@@ -772,9 +901,9 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       if (a < 0.01) continue;
       const sx = toX(x), sy = toY(y), h = S / 2;
       const d = doorAt(w, x, y);
-      const wallLike = c === "#" || c === "%" || (d && (d.kind === "casa" || d.kind === "grieta") && !(d.kind === "casa" && d.open));
+      const wallLike = c === "#" || c === "%" || (d && (d.kind === "casa" || d.kind === "grieta" || d.kind === "montacargas") && !((d.kind === "casa" || d.kind === "montacargas") && d.open));
       if (wallLike) {
-        if (isCity) {
+        if (isCity || w === galpon || w === sotano) {
           ctx.fillStyle = rgba(0.11 * a); ctx.fillRect(sx - h, sy - h, S, S);
           ctx.strokeStyle = rgba(0.5 * a); ctx.beginPath();
           if (!solid(x, y - 1)) { ctx.moveTo(sx - h, sy - h); ctx.lineTo(sx + h, sy - h); }
@@ -884,12 +1013,69 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         ctx.stroke();
         continue;
       }
+      if (c === "?") {
+        const rota = w.rotas.has(x + "," + y);
+        ctx.fillStyle = rgba((rota ? 0.03 : 0.06) * a); ctx.fillRect(sx - h + 1, sy - h + 1, S - 2, S - 2);
+        ctx.strokeStyle = rgba((rota ? 0.8 : 0.3) * a); ctx.beginPath();
+        ctx.moveTo(sx - S * 0.3, sy - S * 0.1); ctx.lineTo(sx - S * 0.05, sy + S * 0.04); ctx.lineTo(sx + S * 0.12, sy - S * 0.2);
+        if (rota) { ctx.moveTo(sx - S * 0.05, sy + S * 0.04); ctx.lineTo(sx + S * 0.05, sy + S * 0.32); ctx.moveTo(sx + S * 0.12, sy - S * 0.2); ctx.lineTo(sx + S * 0.34, sy - S * 0.05); }
+        ctx.stroke(); continue;
+      }
+      if (c === "0" || c === "U") {
+        ctx.fillStyle = "#000"; ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.strokeStyle = rgba(0.45 * a); ctx.setLineDash([S * 0.06, S * 0.06]); ctx.strokeRect(sx - h * 0.8, sy - h * 0.8, S * 0.8, S * 0.8); ctx.setLineDash([]);
+        if (c === "U") { ctx.beginPath(); ctx.arc(sx, sy, S * 0.18, 0, Math.PI * 2); ctx.stroke(); }
+        continue;
+      }
+      if (c === "*") {
+        const pr = w.prensas.find(q => q.x === x && q.y === y), ph = (t + pr.off) % PRENSA_MS, closed = ph < PRENSA_CLOSED, warn = ph > PRENSA_MS - 500;
+        if (warn) { ctx.fillStyle = rgba(0.1 * a); ctx.fillRect(sx - h, sy - h, S, S); }
+        ctx.strokeStyle = rgba(0.6 * a); ctx.strokeRect(sx - S * 0.42, sy - S * 0.42, S * 0.84, S * 0.84);
+        if (closed) { ctx.fillStyle = rgba(0.5 * a); ctx.fillRect(sx - S * 0.42, sy - S * 0.42, S * 0.84, S * 0.84); }
+        continue;
+      }
+      if (c === "_") {
+        const pl = w.placa, on = pl.stone || (cur === w && P.x === x && P.y === y);
+        ctx.strokeStyle = rgba(0.7 * a); ctx.strokeRect(sx - S * 0.32, sy - S * 0.32, S * 0.64, S * 0.64);
+        if (on) { ctx.fillStyle = rgba(0.18 * a); ctx.fillRect(sx - S * 0.26, sy - S * 0.26, S * 0.52, S * 0.52); }
+        if (pl.stone) icon("piedra", sx, sy, S * 0.2, 0.9 * a, false);
+        continue;
+      }
+      if (BELT[c]) {
+        const [bx, by] = BELT[c], off = reduced ? 0 : ((t / BELT_MS) % 1) - 0.5;
+        ctx.fillStyle = rgba(0.06 * a); ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.strokeStyle = rgba(0.5 * a); ctx.beginPath();
+        for (const k of [-0.25, 0.25]) {
+          const cxx = sx + (k + off * 0.5) * S * bx, cyy = sy + (k + off * 0.5) * S * by;
+          ctx.moveTo(cxx - S * 0.12 * bx - S * 0.12 * by, cyy - S * 0.12 * by - S * 0.12 * bx); ctx.lineTo(cxx, cyy);
+          ctx.lineTo(cxx - S * 0.12 * bx + S * 0.12 * by, cyy - S * 0.12 * by + S * 0.12 * bx);
+        }
+        ctx.stroke(); continue;
+      }
+      if (c === "@") {
+        ctx.fillStyle = "#000"; ctx.fillRect(sx - h, sy - h, S, S);
+        ctx.strokeStyle = rgba(0.6 * a); ctx.beginPath();
+        for (let k = 0; k < 28; k++) { const ang = k * 0.45 + (reduced ? 0 : t / 400), r = S * 0.4 * (1 - k / 28); k ? ctx.lineTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r) : ctx.moveTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r); }
+        ctx.stroke(); continue;
+      }
+      if (c === "I") {
+        ctx.strokeStyle = rgba(0.75 * a); ctx.beginPath();
+        ctx.moveTo(sx - S * 0.2, sy - S * 0.4); ctx.lineTo(sx - S * 0.2, sy + S * 0.4); ctx.moveTo(sx + S * 0.2, sy - S * 0.4); ctx.lineTo(sx + S * 0.2, sy + S * 0.4);
+        for (const k of [-0.25, 0, 0.25]) { ctx.moveTo(sx - S * 0.2, sy + k * S); ctx.lineTo(sx + S * 0.2, sy + k * S); }
+        ctx.stroke(); continue;
+      }
       if (c === "," || c === "E" || c === "V") { ctx.fillStyle = rgba(0.045 * a); ctx.fillRect(sx - h, sy - h, S, S); }
       if (c === "R") { ctx.fillStyle = rgba(0.07 * a); ctx.fillRect(sx - h, sy - h, S, S); }
       ctx.fillStyle = rgba(0.4 * a);
       ctx.fillRect(sx - 1, sy - 1, 2, 2);
     }
 
+    // ── marcas de tiza
+    for (const k of w.marks) {
+      const [mx, my] = k.split(",").map(Number), a = cellA(mx, my); if (a < 0.01) continue;
+      const sx = toX(mx), sy = toY(my);
+      ctx.strokeStyle = rgba(0.7 * a); ctx.beginPath(); ctx.moveTo(sx - S * 0.18, sy - S * 0.18); ctx.lineTo(sx + S * 0.18, sy + S * 0.18); ctx.moveTo(sx + S * 0.18, sy - S * 0.18); ctx.lineTo(sx - S * 0.18, sy + S * 0.18); ctx.stroke();
+    }
     // ── tránsito
     if (isCity) {
       ctx.save();
@@ -948,7 +1134,14 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
           ctx.strokeStyle = rgba(0.75 * a * (1 - k)); ctx.strokeRect(sx - S * 0.38, sy - S * 0.38 - k * S * 0.3, S * 0.76, S * 0.76);
           ctx.strokeStyle = rgba(0.35 * a * (1 - k)); ctx.beginPath(); ctx.moveTo(sx - S * 0.26, sy + S * 0.1); ctx.lineTo(sx - S * 0.06, sy - S * 0.26); ctx.moveTo(sx - S * 0.14, sy + S * 0.22); ctx.lineTo(sx + S * 0.02, sy - S * 0.06); ctx.stroke();
         }
-      } else if (d.kind === "reja" || d.kind === "porton") {
+      } else if (d.kind === "montacargas") {
+        const a = base; if (a < 0.01) continue;
+        if (!d.open) {
+          ctx.fillStyle = "#000"; ctx.fillRect(sx - S * 0.38, sy - S * 0.38, S * 0.76, S * 0.76);
+          ctx.strokeStyle = rgba(0.8 * a); ctx.strokeRect(sx - S * 0.38, sy - S * 0.38, S * 0.76, S * 0.76);
+          ctx.beginPath(); ctx.moveTo(sx - S * 0.38, sy - S * 0.38); ctx.lineTo(sx + S * 0.38, sy + S * 0.38); ctx.moveTo(sx + S * 0.38, sy - S * 0.38); ctx.lineTo(sx - S * 0.38, sy + S * 0.38); ctx.stroke();
+        } else if (open < 900) { const k = open / 900; ctx.strokeStyle = rgba((1 - k) * a); ctx.strokeRect(sx - S * 0.38, sy - S * 0.38 - k * S * 0.4, S * 0.76, S * 0.76); }
+      } else if (d.kind === "reja" || d.kind === "porton" || d.kind === "compuerta") {
         const a = base; if (a < 0.01) continue;
         if (!d.open || open < 900) {
           const k = d.open ? clamp01(open / 900) : 0, lift = k * S * 0.6;
@@ -1168,6 +1361,10 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         const k = clamp01((t - lift.start - 300) / (LIFT_MS - 300));
         ctx.save(); ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(0.9); ctx.beginPath(); ctx.arc(px, py, S * 0.34, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); ctx.restore();
       }
+      if (chalk && !chalk.done && t - chalk.start > 300) {
+        const k = clamp01((t - chalk.start - 300) / 1300);
+        ctx.save(); ctx.setLineDash([1, 4]); ctx.strokeStyle = rgba(0.8); ctx.beginPath(); ctx.arc(px, py, S * 0.3, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
       if (climb) {
         const k = clamp01((t - climb.start) / CLIMB_MS);
         ctx.strokeStyle = rgba(0.9); ctx.beginPath(); ctx.arc(px, py, S * 0.32, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
@@ -1232,12 +1429,20 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     }
     if (won && !endGone && t - wonAt > 4600) {
       const k = clamp01((t - wonAt - 4600) / 1500);
-      const secs = Math.round((wonAt - startAt) / 1000), mm = Math.floor(secs / 60), ss = String(secs % 60).padStart(2, "0");
-      const worlds = [city, lab, cajas], all = worlds.flatMap(w2 => w2.items);
+      const n2 = nivelGanado === 2;
+      const secs = Math.round((wonAt - (n2 ? nivel2At || startAt : startAt)) / 1000), mm = Math.floor(secs / 60), ss = String(secs % 60).padStart(2, "0");
+      const worlds = n2 ? [galpon, sotano] : [city, lab, cajas], all = worlds.flatMap(w2 => w2.items);
       const sparks = all.filter(i => i.kind === "chispa"), objs = all.filter(i => i.kind !== "chispa");
       const signs = worlds.flatMap(w2 => w2.signs).filter(sg => sg.text);
       const puzzles = [[...city.doors.values()].find(d => d.kind === "reja").open, [...city.doors.values()].find(d => d.kind === "vitrina").open, stats.cajas1, [...cajas.doors.values()].find(d => d.need === "pares").open, stats.hielo, stats.escaped];
-      const lines = [
+      const lines = n2 ? [
+        ["Tiempo en el nivel", `${mm}:${ss}`],
+        ["Objetos encontrados", `${all.filter(i => i.taken).length} de ${all.length}`],
+        ["Carteles leídos", `${signs.filter(sg => sg.seenAt >= 0).length} de ${signs.length}`],
+        ["Caídas", String(stats.caidas)],
+        ["Viajes en tobogán", String(stats.tobogan)],
+        ["Golpes recibidos", String(stats.hits)]
+      ] : [
         ["Tiempo", `${mm}:${ss}`],
         ["Objetos encontrados", `${objs.filter(i => i.taken).length} de ${objs.length}`],
         ["Chispas", `${sparks.filter(i => i.taken).length} de ${sparks.length}`],
@@ -1253,7 +1458,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = rgba(k);
       ctx.font = `italic 500 ${big}px ${SERIF}`; ctx.fillText("Llegaste.", vw / 2, top + big * 0.4);
       ctx.font = `italic 500 ${Math.round(big * 0.34)}px ${SERIF}`; ctx.fillStyle = rgba(0.85 * k);
-      ctx.fillText("Felicitaciones: terminaste el prototipo.", vw / 2, top + big * 1.05);
+      ctx.fillText(n2 ? "Terminaste el nivel 2." : "Terminaste el nivel 1.", vw / 2, top + big * 1.05);
       ctx.font = `500 13px system-ui, sans-serif`; ctx.textBaseline = "middle";
       lines.forEach(([label, val], i) => {
         const y = top + big * 1.6 + 12 + i * lh;
@@ -1261,7 +1466,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         ctx.textAlign = "left"; ctx.fillStyle = rgba(0.9 * k); ctx.fillText(val, vw / 2 + 10, y);
       });
       ctx.textAlign = "center";
-      if (t - wonAt > 9000) { ctx.fillStyle = rgba(0.4 * k * (reduced ? 1 : 0.6 + 0.4 * Math.sin(t / 500))); ctx.fillText("Podés seguir recorriendo la ciudad", vw / 2, vh - 48 - safe("Bottom")); }
+      if (t - wonAt > 9000) { ctx.fillStyle = rgba(0.4 * k * (reduced ? 1 : 0.6 + 0.4 * Math.sin(t / 500))); ctx.fillText(n2 ? "Por ahora, el galpón termina acá" : "Algo se abrió en el piso de la casa", vw / 2, vh - 48 - safe("Bottom")); }
       ctx.textAlign = "start";
       if (!endShown && k >= 1) endShown = true;
     }
@@ -1287,6 +1492,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     // tránsito
     let dCar = Infinity;
     if (w === city) for (const ln of w.lanes) for (const x of ln.cars) dCar = Math.min(dCar, Math.hypot(x + ln.len / 2 - 0.5 - dp.x, ln.y - dp.y));
+    for (const b of w.belts) dCar = Math.min(dCar, Math.hypot(b.x - dp.x, b.y - dp.y) + 1.5);
     layers.motor.gain.setTargetAtTime(prox(dCar, 4.5) ** 2 * 0.35 * quiet, now, 0.05);
     // calma
     layers.calma.gain.setTargetAtTime(prox(nearest(w.calm), 6) ** 1.5 * 0.022 * quiet, now, 0.3);
@@ -1356,11 +1562,32 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
         inv.tabla++; pickups.push({ kind: "tabla", x: P.x, y: P.y, t, w: city }); sfx.lift();
         P.x = prev.x; P.y = prev.y; lift = null; lastMove = t;
       }
+      // cintas: te llevan en su dirección, una casilla cada BELT_MS
+      const belt = BELT[cur.grid[P.y][P.x]];
+      if (!belt) beltNext = t + BELT_MS;
+      else if (t >= beltNext) { beltNext = t + BELT_MS; const lm = lastMove; tryMove(belt[0], belt[1], t, true); lastMove = lm; }
+      // tiza: quedarse quieto marca el piso (o borra la marca)
+      if (k || !powers.has("tiza") || onBuilt || belt || t - lastMove < 250) chalk = null;
+      else if (!chalk || chalk.x !== P.x || chalk.y !== P.y) chalk = { x: P.x, y: P.y, start: t };
+      else if (!chalk.done && t - chalk.start >= 1600) { const mk = P.x + "," + P.y; cur.marks.has(mk) ? cur.marks.delete(mk) : cur.marks.add(mk); chalk.done = true; sfx.chalk(); }
+    }
+    // prensas: golpean con su ritmo; se oyen de cerca
+    if (awake && !trans) for (const pr of cur.prensas) {
+      const closed = prensaCerrada(pr, t);
+      if (closed && !pr.closed) { const d = Math.hypot(pr.x - dp.x, pr.y - dp.y); if (d < 7) sfx.thump(0.07 * (1 - d / 7)); }
+      pr.closed = closed;
+      if (closed && P.x === pr.x && P.y === pr.y) aplastar(t);
+    }
+    // la placa abre la compuerta mientras algo la pisa
+    if (galpon.placa) {
+      const pl = galpon.placa, on = pl.stone || (cur === galpon && P.x === pl.x && P.y === pl.y);
+      const d = [...galpon.doors.values()].find(q => q.kind === "compuerta");
+      if (d && d.open !== on && !(cur === galpon && P.x === d.x && P.y === d.y)) { d.open = on; d.openAt = t; if (cur === galpon) sfx.gate(); }
     }
     if (hideAt && t >= hideAt) { flipped.forEach(c => { c.state = "down"; }); flipped = []; hideAt = 0; }
     {
       const ease = k => k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-      zoomE = won && cur === city ? ease(clamp01((t - wonAt) / 3000)) * (1 - (endGone ? ease(clamp01((t - endGoneAt) / 1200)) : 0)) : 0;
+      zoomE = won && cur === winWorld ? ease(clamp01((t - wonAt) / 3000)) * (1 - (endGone ? ease(clamp01((t - endGoneAt) / 1200)) : 0)) : 0;
     }
     enemyClock += dt * 1000;
     while (enemyClock >= ENEMY_MS) { enemyClock -= ENEMY_MS; stepEnemies(t); }
@@ -1369,7 +1596,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     stepTraffic(dt, t);
     let tr = targetR;
     if (t < dimUntil) tr = Math.min(tr, 0.35);
-    if ((t < revealUntil || zoomE > 0.02) && cur === city) tr = 120;
+    if ((t < revealUntil || zoomE > 0.02) && cur === winWorld) tr = 120;
     const growing = sparkFx && t - sparkFx.t < 1600;
     R += (tr - R) * Math.min(1, dt * (t < revealUntil ? 0.9 : growing ? 1.6 : 3));
     const f = Math.min(1, dt * 16);

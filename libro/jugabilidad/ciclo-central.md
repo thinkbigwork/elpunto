@@ -21,6 +21,7 @@ No hay botones visibles. Todo se hace moviéndose.
 | Usar, abrir, construir | Ir contra algo llevando lo correcto | Igual | Igual |
 | Escalar | Mantener la dirección contra un borde | Igual | Igual |
 | Levantar una tabla | Quedarse quieto sobre ella con la barreta | Igual | Igual |
+| Marcar el piso (con la tiza) | Quedarse quieto un momento | Igual | Igual |
 | Empujar una caja | Caminar contra ella | Igual | Igual |
 | Reiniciar un cuarto | Pisar la baldosa de reinicio, o quedarse quieto si las cajas te encerraron | Igual | Igual |
 
@@ -31,4 +32,4 @@ El control de consola (PS4, Xbox u otro con la distribución estándar, por USB 
 Solo un punto que late en la negrura; nada más. La primera tecla o toque enciende una luz mínima. Recién a unos pasos aparece algo: un cartel ilegible y, más adelante, una puerta cerrada. El jugador ya tiene una pregunta.
 
 ---
-_Actualizado: 2026-10-04_
+_Actualizado: 2026-10-09_

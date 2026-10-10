@@ -1,6 +1,18 @@
 # Registro de cambios
 
-Versión actual del libro: **0.24** (2026-10-09).
+Versión actual del libro: **0.25** (2026-10-09).
+
+## 0.25 · Nivel 2: el galpón
+
+_2026-10-09_
+
+- Cada capítulo tiene 3 o 4 niveles. El capítulo 1 suma su nivel 2: un galpón abandonado con su sótano, al que se baja por una trampilla en la meta del nivel 1.
+- Objetos nuevos: tiza, cuerda, piedra y engranaje. Terreno nuevo: baldosas flojas, pozos, prensas con ritmo, placa y compuerta, cintas, montacargas, escalera y tobogán.
+- Las trampas devuelven al inicio del nivel; el tobogán, a la plaza del inicio del nivel 1. Ninguna quita lo tomado ni lo resuelto.
+- El progreso se guarda al terminar cada nivel: la próxima vez se empieza en el galpón (con `?nueva`, de cero).
+- El validador y el editor de mapas suman el galpón y el sótano.
+
+Páginas: [galpon](niveles/galpon.md), [temporada-1](niveles/temporada-1.md), [prototipos](niveles/prototipos.md), [glosario](vision/glosario.md), [reglas](jugabilidad/reglas.md), [ciclo-central](jugabilidad/ciclo-central.md), [terreno](contenido/terreno.md), [objetos](contenido/objetos.md), [carteles](contenido/carteles.md), [sonido](arte-audio/sonido.md), [interfaz](arte-audio/interfaz.md), [arquitectura](tecnica/arquitectura.md), [decisiones](produccion/decisiones.md)
 
 ## 0.24 · Una chispa junto al inicio
 

@@ -17,6 +17,9 @@
 | Cajas, cámara final | Acá todo se ve. Lo difícil era otra cosa. |
 | Laberinto, junto al portal | Lo que abre está donde nadie quiere ir. |
 | Laberinto, junto a la guarida | Lo que encierra también protege. |
+| Galpón, entrada | Lo que suena hueco, cede. |
+| Galpón, campo de baldosas flojas | Cada paso cuenta una vez. |
+| Galpón, junto al tobogán | El camino corto es el más largo. |
 
 ## Estilo
 

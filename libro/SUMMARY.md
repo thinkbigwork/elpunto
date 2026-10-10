@@ -44,6 +44,7 @@
 * [Estructura de la Temporada 1](niveles/temporada-1.md)
 * [Prototipos jugables](niveles/prototipos.md)
 * [Cajas](niveles/cajas.md)
+* [El galpón (nivel 2)](niveles/galpon.md)
 * [Dificultad y embudo](niveles/embudo.md)
 
 ## Técnica

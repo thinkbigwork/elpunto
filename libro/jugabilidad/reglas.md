@@ -4,7 +4,7 @@
 
 1. Nada se explica: todo se descubre.
 2. Nadie queda trabado para siempre: lo imprescindible reaparece si se pierde y siempre hay camino de vuelta.
-3. El progreso se guarda siempre, en todos los dispositivos.
+3. El progreso se guarda siempre, en todos los dispositivos. En el prototipo, en el navegador, al terminar cada nivel.
 4. Las respuestas no se compran.
 5. Lo que se comparte es el método, no la respuesta: cada jugador tiene su semilla.
 6. Lo que abre el calendario no se adelanta.
@@ -19,6 +19,8 @@
 | Acertijo | Se reinicia. Muchos errores seguidos "enfrían" el mecanismo un rato |
 | Contrarreloj | Se reinicia el desafío |
 | Alquimia | Perdés los materiales: queda ceniza |
+| Trampa del nivel (baldosa floja, pozo, cinta, prensa) | Volvés al inicio del nivel. Conservás lo tomado y lo resuelto; las baldosas flojas vuelven a estar sanas. El escudo aguanta una prensa |
+| Tobogán | Volvés a la plaza del inicio del nivel 1, sin perder nada; el camino a la casa queda abierto |
 | Exploración | Sin castigo |
 
 ## Puertas
@@ -39,4 +41,4 @@
 - Nada que se construye queda mal para siempre: con la barreta, una tabla puesta se levanta y se vuelve a usar.
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

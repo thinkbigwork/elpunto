@@ -5,9 +5,18 @@
 ## Jerarquía
 
 1. **Temporada:** el arco completo.
-2. **Capítulo:** una parte de la historia, con título propio: un mapa base con 1 o 2 mundos anexos; se abre en una fecha fija y cierra con un cambio de era.
-3. **Zona:** una parte del mapa con su problema central.
-4. **Desafío:** cada obstáculo puntual.
+2. **Capítulo:** una parte de la historia, con título propio y su era visual. Tiene 3 o 4 niveles; se abre en una fecha fija y cierra con un cambio de era.
+3. **Nivel:** un mapa con sus mundos anexos. Al terminarlo se guarda el progreso y se sigue en el siguiente nivel del mismo capítulo.
+4. **Zona:** una parte del mapa con su problema central.
+5. **Desafío:** cada obstáculo puntual.
+
+## Capítulo 1
+
+| Nivel | Mapa | Mundos anexos | Estado |
+| --- | --- | --- | --- |
+| 1 | La ciudad, con el barrio central de la lectura | Laberinto y [Cajas](../niveles/cajas.md) | En prototipo |
+| 2 | [El galpón](../niveles/galpon.md) | Sótano | En prototipo |
+| 3 y 4 | Por diseñar | — | Propuesto |
 
 ## Tres finales
 
@@ -23,4 +32,4 @@
 - El día de apertura es un evento: todos entran juntos.
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

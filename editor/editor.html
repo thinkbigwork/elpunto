@@ -171,17 +171,25 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
     T(">", "Baldosa rápida", "#c86fb4", "Puertas y mecanismos"), T("<", "Baldosa normal", "#c86fb4", "Puertas y mecanismos"),
     T("$", "Caja o bloque (se empuja)", "#c9a27a", "Cajas y laberinto"), T("j", "Carta de memoria", "#c9a27a", "Cajas y laberinto"),
     T("Z", "Baldosa de reinicio", "#c9a27a", "Cajas y laberinto"), T("P", "Reja de los pares", "#c86fb4", "Cajas y laberinto"),
-    T("i", "Hielo", "#bfe3f2", "Cajas y laberinto", ""), T("r", "Roca", "#7d7d85", "Cajas y laberinto", "r"), T("x", "Umbral", "#cfccc2", "Cajas y laberinto", "·")
+    T("i", "Hielo", "#bfe3f2", "Cajas y laberinto", ""), T("r", "Roca", "#7d7d85", "Cajas y laberinto", "r"), T("x", "Umbral", "#cfccc2", "Cajas y laberinto", "·"),
+    T("?", "Baldosa floja (un solo paso)", "#e8b36a", "Galpón (nivel 2)"), T("0", "Pozo (vuelve al inicio del nivel)", "#151513", "Galpón (nivel 2)", "○"),
+    T("U", "Pozo con bajada (con cuerda)", "#151513", "Galpón (nivel 2)", "◎"), T("*", "Prensa", "#d05a4a", "Galpón (nivel 2)"),
+    T("_", "Placa de presión", "#7cb6d8", "Galpón (nivel 2)"), T("D", "Compuerta (la abre la placa)", "#5a8fb3", "Galpón (nivel 2)"),
+    T("(", "Cinta hacia el norte", "#9c8fd0", "Galpón (nivel 2)", "↑"), T(")", "Cinta hacia el sur", "#9c8fd0", "Galpón (nivel 2)", "↓"),
+    T("{", "Cinta hacia el oeste", "#9c8fd0", "Galpón (nivel 2)", "←"), T("}", "Cinta hacia el este", "#9c8fd0", "Galpón (nivel 2)", "→"),
+    T("Y", "Montacargas (pide engranaje)", "#5a8fb3", "Galpón (nivel 2)"), T("@", "Tobogán (vuelve al nivel 1)", "#d05a4a", "Galpón (nivel 2)"),
+    T("I", "Escalera (sube del sótano)", "#38b07a", "Galpón (nivel 2)"), T("t", "Tiza", "#e0b422", "Galpón (nivel 2)"),
+    T("s", "Cuerda", "#e0b422", "Galpón (nivel 2)"), T("g", "Piedra", "#e0b422", "Galpón (nivel 2)"), T("w", "Engranaje", "#e0b422", "Galpón (nivel 2)")
   ];
   const BY = Object.fromEntries(TILES.map(t => [t.ch, t]));
-  const MUNDOS = [["ciudad", "Ciudad", "CIUDAD"], ["laberinto", "Laberinto", "LABERINTO"], ["cajas", "Cajas", "CAJAS"]];
+  const MUNDOS = [["ciudad", "Ciudad", "CIUDAD"], ["laberinto", "Laberinto", "LABERINTO"], ["cajas", "Cajas", "CAJAS"], ["galpon", "Galpón", "GALPON"], ["sotano", "Sótano", "SOTANO"]];
   const TOOLS = [["lapiz", "Lápiz", "B"], ["rect", "Rectángulo", "R"], ["linea", "Línea", "L"], ["balde", "Balde", "F"], ["gotero", "Gotero", "I"]];
 
   // ── Estado
   let game = null, gameUrl = null;          // mapas tal como están en el juego
   let docs = {};                            // { mundo: { filas: [[...]], carteles: {} } }
   let mundo = "ciudad", tool = "lapiz", brush = ".", heat = false, cell = 14, sel = null, hover = null;
-  const undo = { ciudad: [], laberinto: [], cajas: [] }, redo = { ciudad: [], laberinto: [], cajas: [] };
+  const undo = { ciudad: [], laberinto: [], cajas: [], galpon: [], sotano: [] }, redo = { ciudad: [], laberinto: [], cajas: [], galpon: [], sotano: [] };
   const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
 
   // ── Carga: lee los mapas del propio juego
@@ -279,7 +287,7 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
       const [x, y] = q.shift();
       for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = x + a, ny = y + b, c = g[ny] && g[ny][nx], k = nx + "," + ny;
-        if (c === undefined || d.has(k) || "#~r".includes(c)) continue;
+        if (c === undefined || d.has(k) || "#~r0U".includes(c)) continue;
         d.set(k, d.get(x + "," + y) + 1); q.push([nx, ny]);
       }
     }
@@ -316,9 +324,10 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
     const filas = doc().filas.map(r => r.join("")), car = doc().carteles;
     let checks;
     if (mundo === "ciudad") checks = window.validarCiudad ? window.validarCiudad(filas, car) : [{ seccion: "Validación", ok: false, msg: "no se cargó validar-ciudad.js" }];
+    else if (mundo === "galpon" || mundo === "sotano") checks = window.validarGalpon ? window.validarGalpon(docs.galpon.filas.map(r => r.join("")), docs.sotano.filas.map(r => r.join("")), docs.galpon.carteles) : [{ seccion: "Validación", ok: false, msg: "no se cargó validar-ciudad.js" }];
     else checks = basic(filas, car);
     const bad = checks.filter(c => !c.ok && !c.warn).length;
-    let html = `<div class="summary ${bad ? "bad" : "ok"}">${bad ? bad + (bad === 1 ? " problema" : " problemas") : mundo === "ciudad" ? "Progresión válida" : "Forma válida"}</div><ul class="checks">`;
+    let html = `<div class="summary ${bad ? "bad" : "ok"}">${bad ? bad + (bad === 1 ? " problema" : " problemas") : mundo === "ciudad" || mundo === "galpon" || mundo === "sotano" ? "Progresión válida" : "Forma válida"}</div><ul class="checks">`;
     let last = "";
     for (const c of checks) { if (c.seccion !== last) { html += `<li class="sec">${esc(c.seccion)}</li>`; last = c.seccion; } html += `<li class="${c.ok ? "ok" : c.warn ? "warn" : "bad"}">${esc(c.msg)}</li>`; }
     $("checks").innerHTML = html + "</ul>";
@@ -345,10 +354,10 @@ dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10
     return out;
   };
   const distList = () => {
-    if (!dist || mundo !== "ciudad") { $("distbox").hidden = true; return; }
+    if (!dist || !["ciudad", "galpon"].includes(mundo)) { $("distbox").hidden = true; return; }
     const items = [];
     doc().filas.forEach((r, y) => r.forEach((c, x) => {
-      if (!/[copOaleqhfkzCLHVmQXG<>]/.test(c)) return;
+      if (!/[copOaleqhfkzCLHVmQXG<>tsgwUY@_D]/.test(c)) return;
       const ds = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].map(([a, b]) => dist.get((x + a) + "," + (y + b))).filter(v => v !== undefined);
       items.push({ x, y, c, d: ds.length ? Math.min(...ds) : null });
     }));

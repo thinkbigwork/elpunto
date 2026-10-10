@@ -4,7 +4,7 @@ Un punto blanco en una pantalla negra. Sin reglas, sin instrucciones. Lo demás 
 
 ## Jugar
 
-Abrí `juego/el-punto.html` en el navegador, o entrá a https://elpunto-mu.vercel.app. Flechas o WASD para moverse; también anda con un control de PS4 o Xbox (cruceta o palanca izquierda).
+Abrí `juego/el-punto.html` en el navegador, o entrá a https://elpunto-mu.vercel.app. Flechas o WASD para moverse; también anda con un control de PS4 o Xbox (cruceta o palanca izquierda). El progreso se guarda al terminar cada nivel; para empezar de cero, agregá `?nueva` a la dirección.
 
 ## Libro de diseño
 
@@ -16,7 +16,7 @@ Todo el diseño está en [`libro/`](libro/README.md): empezá por el [índice](l
 npm install
 npx playwright install chromium
 npm test
-npm run validar:ciudad
+npm run validar
 ```
 
 ## Trabajar con Claude Code

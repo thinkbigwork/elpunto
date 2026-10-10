@@ -1,12 +1,13 @@
 // Prueba de regresión del juego. Uso: npm test
 // Crea una copia de prueba del juego con un gancho window.__t (nunca se agrega al juego publicado)
-// y recorre: orden aleatorio de figuras, control de consola, portones del barrio central, zapatillas de ida y vuelta, encierro de cazadores,
+// y recorre: orden aleatorio de figuras, control de consola, portones del barrio central, el nivel 2 (galpón, sótano,
+// trampas y tobogán), el progreso guardado, zapatillas de ida y vuelta, encierro de cazadores,
 // salida del laberinto y final con zoom. Termina con código 1 si algo falla.
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
 const RAIZ = path.join(__dirname, '..');
 const TMP = path.join(__dirname, '.tmp'); fs.mkdirSync(TMP, { recursive: true });
-const HOOK = ' window.__t = { P, city, lab, cajas, inv, powers, stats, order, get hunters(){return hunters}, get cur(){return cur}, get won(){return won} };';
+const HOOK = ' window.__t = { P, city, lab, cajas, galpon, sotano, inv, powers, stats, order, get hunters(){return hunters}, get cur(){return cur}, get won(){return won}, get nivelGanado(){return nivelGanado} };';
 const src = fs.readFileSync(path.join(RAIZ, 'juego/el-punto.html'), 'utf8');
 if (!src.includes('cv.focus();')) throw new Error('No encuentro dónde enganchar la prueba (cv.focus();)');
 const PRUEBA = path.join(TMP, 'juego-prueba.html');
@@ -95,6 +96,47 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
   const goal = await ev(() => [__t.city.goal.x, __t.city.goal.y]); await tp(goal[0] - 1, goal[1]); await go('R'); await p.waitForTimeout(6500);
   ok(await ev(() => __t.won), 'se llega a la meta');
   await p.screenshot({ path: path.join(TMP, 'final.png') });
+
+  console.log('Nivel 2: el galpón');
+  const nivel = () => ev(() => (JSON.parse(localStorage.getItem('punto.progreso') || 'null') || {}).nivel);
+  const enInicio = () => ev(() => __t.cur.name === 'galpon' && __t.P.x === __t.galpon.start.x && __t.P.y === __t.galpon.start.y);
+  ok(await nivel() === 2, 'al terminar el nivel 1 se guarda el progreso');
+  await go('L'); await go('R'); await p.waitForTimeout(1300);
+  ok(await ev(() => __t.cur.name) === 'galpon', 'la meta del nivel 1 se vuelve una trampilla que baja al galpón');
+  await tp(6, 10); await go('R'); await go('L'); await go('R'); await p.waitForTimeout(1300);
+  ok(await enInicio() && await ev(() => __t.stats.caidas) === 1, 'la baldosa floja aguanta una pisada; a la segunda se vuelve al inicio del nivel');
+  const comp = () => ev(() => [...__t.galpon.doors.values()].find(d => d.kind === 'compuerta').open);
+  await tp(36, 3); await go('U'); const c1 = await comp(); await go('D'); const c2 = await comp();
+  ok(c1 && !c2, 'la placa abre la compuerta solo mientras alguien la pisa');
+  await ev(() => { __t.inv.piedra = 1 }); await go('U'); await go('D'); await go('D');
+  ok(await comp() && await ev(() => __t.inv.piedra) === 0, 'con la piedra encima, la compuerta queda abierta');
+  await tp(30, 17); await go('R'); await p.waitForTimeout(1300);
+  ok(await enInicio(), 'sin cuerda, el pozo devuelve al inicio del nivel');
+  await ev(() => __t.powers.add('cuerda')); await tp(30, 17); await go('R'); await p.waitForTimeout(1300);
+  ok(await ev(() => __t.cur.name) === 'sotano', 'con la cuerda, el pozo baja al sótano');
+  await tp(22, 4); await go('R'); await p.waitForTimeout(1300);
+  ok(await ev(() => __t.cur.name === 'galpon' && __t.P.x === 30 && __t.P.y === 17), 'la escalera del sótano sube junto al pozo');
+  let caidas = await ev(() => __t.stats.caidas); await tp(34, 13); await p.waitForTimeout(2600);
+  ok(await ev(() => __t.stats.caidas) === caidas + 1 && await enInicio(), 'quedarse sobre la cinta lleva al pozo');
+  const golpes = await ev(() => __t.stats.hits); await tp(38, 17); await p.waitForTimeout(2700);
+  ok(await ev(() => __t.stats.hits) === golpes + 1 && await enInicio(), 'la prensa golpea con su ritmo y devuelve al inicio del nivel');
+  await tp(36, 11); await go('R'); await p.waitForTimeout(1300);
+  ok(await ev(() => __t.cur.name === 'ciudad' && __t.P.x === __t.city.start.x && __t.P.y === __t.city.start.y && __t.stats.tobogan === 1), 'el tobogán devuelve a la plaza del inicio del nivel 1');
+  ok(await ev(() => __t.powers.has('cuerda')), 'la caída al nivel 1 no quita nada');
+  await tp(goal[0] - 1, goal[1]); await go('R'); await p.waitForTimeout(1300);
+  ok(await ev(() => __t.cur.name) === 'galpon', 'se vuelve al galpón por la trampilla');
+  await ev(() => { __t.inv.engranaje = 1 }); await tp(43, 9); await go('U'); await go('U'); await go('U');
+  ok(await ev(() => __t.P.y) === 7 && await ev(() => __t.inv.engranaje) === 0, 'el engranaje arregla el montacargas');
+  await tp(39, 3); await go('R'); await p.waitForTimeout(6500);
+  ok(await ev(() => __t.won && __t.nivelGanado === 2), 'se llega a la meta del nivel 2');
+  ok(await nivel() === 3, 'al terminar el nivel 2 se guarda el progreso');
+  await p.screenshot({ path: path.join(TMP, 'final-nivel2.png') });
+
+  console.log('Progreso guardado');
+  await p.goto(URL); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => __t.cur.name === 'galpon' && __t.powers.has('cuerda')), 'al volver a abrir el juego se empieza en el galpón, con los poderes');
+  await p.goto(URL + '?nueva'); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => __t.cur.name === 'ciudad'), 'con ?nueva se empieza de cero');
 
   ok(errs.length === 0, 'sin errores en la consola' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();

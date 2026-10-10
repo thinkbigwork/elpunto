@@ -17,7 +17,7 @@ Juego de descubrimiento y estrategia online. Empieza como un punto blanco en una
 | `libro/CAMBIOS.md` | Registro de cambios: una entrada por paso, la más nueva arriba |
 | `libro-web/` | La página web del libro, que lee sus datos de una base de datos (ver abajo) |
 | `herramientas/solvers.js` | Solucionadores para validar cuartos: `sokoban(filas)` y `ice(filas)` |
-| `herramientas/validar-ciudad.js` | BFS por etapas sobre la ciudad (`npm run validar:ciudad`). Lo usa también el editor en el navegador: mantener el envoltorio que lo hace funcionar en los dos lados |
+| `herramientas/validar-ciudad.js` | BFS por etapas sobre la ciudad y el galpón con su sótano (`npm run validar`). Lo usa también el editor en el navegador: mantener el envoltorio que lo hace funcionar en los dos lados |
 | `editor/editor.html` | Editor de mapas del equipo (en `/editor`): dibuja, valida, prueba (`?prueba`) y exporta |
 | `herramientas/libro-a-web.js` | Convierte `libro/` en los JSON de la versión web |
 | `pruebas/regresion.js` | Prueba de punta a punta con Playwright (`npm test`) |
@@ -37,7 +37,9 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 ## Cómo está hecho el juego
 
 - **La lógica vive en una grilla y el dibujo es una capa aparte.** Cada mundo es un arreglo de filas de texto; cada carácter es un tipo de casilla, objeto o puerta (ver el `switch` del constructor de mundos).
-- Mundos actuales: **ciudad** (mapa base, 61 × 48, calles de 1 casilla), **laberinto** (23 × 17) y **cajas** (35 × 9, tres cuartos: empujar cajas, memoria de pares y hielo).
+- **Niveles:** cada capítulo tiene 3 o 4. Capítulo 1, nivel 1: **ciudad** (61 × 48, calles de 1 casilla) con sus anexos **laberinto** (23 × 17) y **cajas** (35 × 9: empujar cajas, memoria de pares y hielo). Nivel 2: **galpón** (45 × 21) con su **sótano** (25 × 9); se entra por la meta del nivel 1, que se vuelve trampilla.
+- **Trampas:** devuelven al inicio del nivel (o el tobogán, al inicio del nivel 1) sin quitar nada de lo tomado ni de lo resuelto. Al caer, las baldosas flojas vuelven a estar sanas.
+- **Progreso:** se guarda en `localStorage` (`punto.progreso`) al terminar cada nivel; al volver se empieza en el nivel siguiente. `?nueva` borra el progreso.
 - **Escala de la ciudad:** calles de 1 casilla y manzanas compactas, como `referencias/ciudad-original-41x32.txt`. Para agrandarla se suman calles, manzanas y barrios; nunca se estira.
 - **Leer primero:** la ciudad empieza en el medio, en un barrio central cerrado con todo lo necesario para leer. Sus salidas son portones `G` que se abren al llegar al lado con el libro. Nada necesario para leer puede quedar afuera, y nada de afuera puede alcanzarse sin el libro (lo revisa `npm run validar:ciudad`).
 - Una **semilla** nueva por partida (mulberry32) decide el orden de las figuras, la melodía de la vitrina y las cartas.
@@ -45,12 +47,12 @@ El libro web de Vercel se regenera solo en cada push. Si la persona lo pide, act
 - Visión: radio base 1, cada chispa suma 0,5 (6 chispas → 4). Al ganar, la cámara se aleja hasta mostrar el mapa entero.
 - Los puntos de regreso se calculan desde el mapa: al salir del laberinto, debajo de la grieta; al volver de Cajas, a la izquierda del portal `Q`.
 - Modo prueba: con `?prueba` el juego reemplaza un mundo por el que dejó el editor en `localStorage` (`punto.prueba`). Es parte del juego, no un gancho de prueba como `window.__t`.
-- Si llega un mapa exportado del editor: reemplazar el arreglo y las claves de `CARTELES` de ese mundo, correr `npm run validar:ciudad` (si es la ciudad) y `npm test`, y actualizar el libro.
+- Si llega un mapa exportado del editor: reemplazar el arreglo y las claves de `CARTELES` de ese mundo, correr `npm run validar` (si es la ciudad, el galpón o el sótano) y `npm test`, y actualizar el libro.
 - Textos de carteles en el objeto `CARTELES`, por mundo y coordenada `"x,y"`. Si se mueve un mapa, hay que mover sus claves.
 
 ## Validar antes de dar algo por terminado
 
-- **Mapas:** después de tocar un mapa, comprobar con BFS (para la ciudad, `npm run validar:ciudad`; si cambia la progresión, actualizar sus etapas) que cada tramo de la progresión se puede alcanzar con lo que el jugador tiene en ese momento (lectura, tablas, escalar, sombrero, casa). Nunca debe quedar un objeto necesario detrás de lo que ese mismo objeto abre.
+- **Mapas:** después de tocar un mapa, comprobar con BFS (para la ciudad y el galpón, `npm run validar`; si cambia la progresión, actualizar sus etapas) que cada tramo de la progresión se puede alcanzar con lo que el jugador tiene en ese momento (lectura, tablas, escalar, sombrero, casa). Nunca debe quedar un objeto necesario detrás de lo que ese mismo objeto abre.
 - **Cuartos de cajas o hielo:** pasarlos por `herramientas/solvers.js`. Un cuarto de cajas debe tener solución y no debe dejar al jugador encerrado sin la baldosa de reinicio; uno de hielo, ningún punto sin vuelta.
 - **Juego:** `npm test` debe terminar en "Todo bien." Si se cambia algo que la prueba recorre (coordenadas del bloque, la grieta, la meta), actualizar la prueba.
 - La prueba engancha `window.__t` en una **copia** del juego (`pruebas/.tmp/`). Nunca agregar ese gancho a `juego/el-punto.html`.

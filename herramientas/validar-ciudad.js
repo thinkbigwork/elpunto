@@ -1,4 +1,5 @@
-// Valida la ciudad con BFS por etapas: cada tramo de la progresión se alcanza con lo que el jugador
+// Valida la ciudad (nivel 1) y el galpón con su sótano (nivel 2) con BFS por etapas.
+// Ciudad: cada tramo de la progresión se alcanza con lo que el jugador
 // tiene en ese momento, nada necesario queda detrás de lo que abre y no hay casillas aisladas.
 // También revisa los carteles, los puntos de regreso de los anexos y los carriles de la avenida.
 // Lo usan la terminal (npm run validar:ciudad [juego/el-punto.html]) y el editor de mapas (en el navegador).
@@ -122,8 +123,78 @@
     return out;
   };
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = { validarCiudad };
-  else raiz.validarCiudad = validarCiudad;
+  // ── Nivel 2: el galpón y su sótano. Las baldosas flojas (?) se pueden pisar una sola vez por camino.
+  const validarGalpon = (galpon, sotano, carteles = {}) => {
+    const out = [];
+    let seccion = 'Forma';
+    const check = (ok, msg) => { out.push({ seccion, ok: !!ok, msg }); return !!ok; };
+    for (const [n, rows] of [['galpón', galpon], ['sótano', sotano]]) {
+      const W = rows[0].length;
+      check(rows.every(r => r.length === W) && /^#+$/.test(rows[0]) && /^#+$/.test(rows.at(-1)) && rows.every(r => r[0] === '#' && r[W - 1] === '#'), `${n}: filas parejas y borde cerrado`);
+    }
+    const mk = rows => rows.map(r => r.split(''));
+    const G = mk(galpon), B = mk(sotano);
+    const find = (g, ch) => { const o = []; g.forEach((r, y) => r.forEach((c, x) => { if (c === ch) o.push([x, y]); })); return o; };
+    const count = (g, ch) => find(g, ch).length;
+    seccion = 'Conteos';
+    const faltan = [...'SMYD_U@tsg'].filter(ch => count(G, ch) !== 1);
+    check(!faltan.length, 'galpón: un inicio, meta, montacargas, compuerta, placa, bajada, tobogán, tiza, cuerda y piedra' + (faltan.length ? ' — mal: ' + faltan.join(' ') : ''));
+    check([...'SIw'].every(ch => count(B, ch) === 1), 'sótano: una llegada, una escalera y el engranaje');
+    const signs = find(G, 'T').map(p => p.join(',')), sinTexto = signs.filter(k => !carteles[k]);
+    check(!sinTexto.length, 'cada cartel del galpón tiene texto' + (sinTexto.length ? ' — falta en ' + sinTexto.join(' ') : ''));
+
+    // búsqueda por estados: posición, baldosas flojas ya pisadas y si ya se tomó el objeto buscado
+    const buscar = (g, open, objeto, meta) => {
+      const flojas = new Map(); find(g, '?').forEach((p, i) => flojas.set(p.join(','), i));
+      if (flojas.size > 30) return false;
+      const [sx, sy] = find(g, 'S')[0], seen = new Set(), q = [[sx, sy, 0, !objeto]];
+      while (q.length) {
+        const [x, y, used, got] = q.shift();
+        const st = x + ',' + y + ',' + used + ',' + got; if (seen.has(st)) continue; seen.add(st);
+        if (got && meta(x, y)) return true;
+        for (const [a, b] of DIRS) {
+          const nx = x + a, ny = y + b, c = g[ny] && g[ny][nx], k = nx + ',' + ny;
+          if (!c || '#0U@'.includes(c) || ((c === 'D' || c === 'Y') && !open.has(c))) continue;
+          let u = used;
+          if (flojas.has(k)) { const bit = 1 << flojas.get(k); if (u & bit) continue; u |= bit; }
+          q.push([nx, ny, u, got || c === objeto]);
+        }
+      }
+      return false;
+    };
+    const libre = (g, open) => { // alcance sin contar las flojas
+      const [sx, sy] = find(g, 'S')[0], seen = new Set([sx + ',' + sy]), q = [[sx, sy]];
+      while (q.length) { const [x, y] = q.shift(); for (const [a, b] of DIRS) { const nx = x + a, ny = y + b, c = g[ny] && g[ny][nx], k = nx + ',' + ny; if (!c || seen.has(k) || '#0U@'.includes(c) || ((c === 'D' || c === 'Y') && !open.has(c))) continue; seen.add(k); q.push([nx, ny]); } }
+      return seen;
+    };
+    const junto = (g, ch) => { const [tx, ty] = find(g, ch)[0]; return (x, y) => Math.abs(x - tx) + Math.abs(y - ty) === 1; };
+    const en = (g, ch) => { const [tx, ty] = find(g, ch)[0]; return (x, y) => x === tx && y === ty; };
+
+    seccion = '1. Depósito y campo de baldosas flojas';
+    let r = libre(G, new Set());
+    check(r.has(find(G, 't')[0].join(',')) && r.has(find(G, 's')[0].join(',')), 'la tiza y la cuerda');
+    check(buscar(G, new Set(), 'g', en(G, '_')), 'se toma la piedra y se llega a la placa sin pisar dos veces una baldosa floja');
+    check(!find(G, 'U').some(([x, y]) => DIRS.some(([a, b]) => r.has((x + a) + ',' + (y + b)))), 'la bajada y lo que sigue están detrás de la compuerta');
+    seccion = '2. Compuerta abierta: cinta, bajada y tobogán';
+    r = libre(G, new Set(['D']));
+    const cerca = ch => find(G, ch).some(([x, y]) => DIRS.some(([a, b]) => r.has((x + a) + ',' + (y + b))));
+    check(cerca('U'), 'el pozo con bajada');
+    check(cerca('@'), 'el tobogán (la trampa al nivel 1)');
+    check(cerca('Y'), 'el montacargas, cerrado');
+    check(!r.has(find(G, 'M')[0].join(',')), 'la meta está detrás del montacargas');
+    seccion = '3. Sótano';
+    check(buscar(B, new Set(), 'w', en(B, 'I')), 'se toma el engranaje y se llega a la escalera sin pisar dos veces una baldosa floja');
+    seccion = '4. Montacargas → meta';
+    r = libre(G, new Set(['D', 'Y']));
+    check(r.has(find(G, 'M')[0].join(',')), 'la meta del nivel 2');
+    seccion = 'Sin encierros';
+    const islas = []; G.forEach((row, y) => row.forEach((c, x) => { if (!'#0U@'.includes(c) && !r.has(x + ',' + y)) islas.push(x + ',' + y); }));
+    check(!islas.length, 'toda casilla caminable del galpón se alcanza' + (islas.length ? ' — aisladas: ' + islas.slice(0, 8).join(' ') : ''));
+    return out;
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = { validarCiudad, validarGalpon };
+  else { raiz.validarCiudad = validarCiudad; raiz.validarGalpon = validarGalpon; }
 
   // terminal: lee la ciudad y los carteles del juego
   if (typeof require !== 'undefined' && typeof module !== 'undefined' && require.main === module) {
@@ -131,8 +202,10 @@
     const src = fs.readFileSync(process.argv[2] || path.join(__dirname, '../juego/el-punto.html'), 'utf8');
     const rows = eval(src.match(/const CIUDAD = (\[[\s\S]*?\]);/)[1]);
     const CARTELES = eval('(' + src.match(/const CARTELES = (\{[\s\S]*?\n  \});/)[1] + ')');
+    const arr = n => eval(src.match(new RegExp('const ' + n + ' = (\\[[\\s\\S]*?\\]);'))[1]);
     let ultima = '', ok = true;
-    for (const c of validarCiudad(rows, CARTELES.ciudad)) {
+    const todo = [...validarCiudad(rows, CARTELES.ciudad).map(c => ({ ...c, seccion: 'Ciudad · ' + c.seccion })), ...validarGalpon(arr('GALPON'), arr('SOTANO'), CARTELES.galpon).map(c => ({ ...c, seccion: 'Galpón · ' + c.seccion }))];
+    for (const c of todo) {
       if (c.seccion !== ultima) { console.log(c.seccion); ultima = c.seccion; }
       console.log((c.ok ? '  ✓ ' : '  ✗ ') + c.msg); if (!c.ok) ok = false;
     }

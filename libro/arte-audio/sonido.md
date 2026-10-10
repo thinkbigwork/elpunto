@@ -11,7 +11,7 @@
 | Estruendo | El laberinto despertó | En prototipo |
 | Acorde suave y cálido | Hay un refugio | En prototipo |
 | Campanita que se repite | Algo te llama | En prototipo |
-| Motor grave | Tránsito | En prototipo |
+| Motor grave | Tránsito, o una cinta que corre | En prototipo |
 | Golpe seco doble | Te falta algo para pasar | En prototipo |
 | Chapoteo | Agua: no se puede pisar | En prototipo |
 | Golpes de martillo | Construiste algo | En prototipo |
@@ -20,6 +20,10 @@
 | Un tono por símbolo | Cada carta de memoria suena distinto: se puede jugar también de oído | En prototipo |
 | Arrastre | Empujaste una caja | En prototipo |
 | Rebobinado | El cuarto volvió a empezar | En prototipo |
+| Crujido | Una baldosa floja cedió: no la pises de nuevo | En prototipo |
+| Silbido que baja | Te caíste: volvés al inicio del nivel | En prototipo |
+| Golpe metálico con ritmo | Una prensa | En prototipo |
+| Roce de cuerda | Bajaste por el pozo | En prototipo |
 
 ## Ambientes
 
@@ -30,4 +34,4 @@ Cada mundo tiene un fondo propio: zumbido grave y estable en la ciudad, disonant
 Cada sonido-señal necesita una alternativa visual. Ver [Accesibilidad](../tecnica/accesibilidad.md).
 
 ---
-_Actualizado: 2026-10-02_
+_Actualizado: 2026-10-09_

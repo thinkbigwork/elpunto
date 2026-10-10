@@ -50,6 +50,10 @@
 | Los cazadores se pueden encerrar empujando un bloque | 2 oct 2026 |
 | Ciudad del prototipo ampliada un 50 % (61 × 48); reemplazada por la siguiente | 2 oct 2026 |
 | Ciudad a la escala original (calles de 1 casilla) con barrios nuevos, en 61 × 48 | 2 oct 2026 |
+| Cada capítulo tiene 3 o 4 niveles; el cambio de era llega al cerrar el capítulo | 9 oct 2026 |
+| Nivel 2 del capítulo 1: el galpón, con su sótano | 9 oct 2026 |
+| Trampas que devuelven al inicio del nivel, y un tobogán al nivel 1, sin quitar nada | 9 oct 2026 |
+| El progreso se guarda al terminar cada nivel | 9 oct 2026 |
 | Una sexta chispa en la plaza del inicio: 6 chispas, visión máxima 4 | 9 oct 2026 |
 | El inicio pasa al medio del mapa, en un barrio central cerrado con todo lo necesario para leer | 9 oct 2026 |
 | Leer es obligatorio: el barrio central tiene dos portones (norte y sur) que se abren al saber leer | 9 oct 2026 |
