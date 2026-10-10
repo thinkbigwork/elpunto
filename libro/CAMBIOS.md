@@ -1,6 +1,15 @@
 # Registro de cambios
 
-Versión actual del libro: **0.26** (2026-10-10).
+Versión actual del libro: **0.27** (2026-10-10).
+
+## 0.27 · Link directo al nivel 2
+
+_2026-10-10_
+
+- Con `?nivel=2` en la dirección, el juego empieza en el galpón con el libro y el sombrero, sin tocar el progreso guardado ni dar la insignia.
+- La página del galpón y la de prototipos tienen el link para jugarlo directo.
+
+Páginas: [galpon](niveles/galpon.md), [prototipos](niveles/prototipos.md), [arquitectura](tecnica/arquitectura.md)
 
 ## 0.26 · La trampilla se ve y se baja sola
 

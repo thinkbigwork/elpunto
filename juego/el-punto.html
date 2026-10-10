@@ -290,7 +290,9 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   // niveles: al terminar uno se guarda el progreso, y la próxima vez se empieza en el siguiente (?nueva lo borra)
   let bajarAt = 0, done1 = false, done2 = false, winWorld = null, nivelGanado = 0, nivel2At = 0, extraR = 0, beltNext = 0, chalk = null;
   if (/[?&]nueva\b/.test(location.search)) store("punto.progreso", "");
-  const progreso = (() => { if (PRUEBA) return null; try { return JSON.parse(store("punto.progreso") || "null"); } catch (e) { return null; } })();
+  // atajo para el equipo: ?nivel=2 empieza en el galpón con lo que el nivel 1 garantiza, sin tocar el progreso guardado
+  const ATAJO = !PRUEBA && /[?&]nivel=2\b/.test(location.search);
+  const progreso = ATAJO ? { nivel: 2, poderes: ["libro", "sombrero"], chispas: 0 } : (() => { if (PRUEBA) return null; try { return JSON.parse(store("punto.progreso") || "null"); } catch (e) { return null; } })();
   if (progreso && progreso.nivel >= 2) {
     done1 = true; done2 = progreso.nivel >= 3;
     cur = galpon; P.x = dp.x = galpon.start.x; P.y = dp.y = galpon.start.y;
@@ -302,7 +304,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
     labOpen = labCalm = true;
   }
   const guardar = nivel => {
-    if (PRUEBA) return;
+    if (PRUEBA || ATAJO) return;
     const chispas = [city, lab, cajas].flatMap(w => w.items).filter(i => i.kind === "chispa" && i.taken).length;
     store("punto.progreso", JSON.stringify({ nivel, poderes: [...powers], chispas: Math.max(chispas, progreso ? progreso.chispas || 0 : 0) }));
   };
@@ -516,7 +518,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
   };
   const ganar = (nivel, now) => {
     won = true; wonAt = now; winWorld = cur; nivelGanado = nivel; endGone = false; endShown = false;
-    badge = true; if (!PRUEBA) store("punto.insignia", "1");
+    badge = true; if (!PRUEBA && !ATAJO) store("punto.insignia", "1");
     revealUntil = now + 9500; sfx.win();
     if (nivel === 1) { done1 = true; targetR += SPARK_R; guardar(2); }
     if (nivel === 2) { done2 = true; guardar(3); }
@@ -1427,9 +1429,9 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; t
       const pw = POWERS.filter(p => powers.has(p)), ty = 26 + safe("Top");
       pw.forEach((p, i) => icon(p, vw - 26 - i * 34, ty, 10, p === "escudo" && shield === 0 ? 0.3 : 0.75, false));
     }
-    if (PRUEBA) {
+    if (PRUEBA || ATAJO) {
       ctx.font = "500 11px system-ui, sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "start";
-      ctx.fillStyle = rgba(0.45); ctx.fillText("mapa de prueba", 16, vh - 16 - safe("Bottom"));
+      ctx.fillStyle = rgba(0.45); ctx.fillText(ATAJO ? "atajo al nivel 2" : "mapa de prueba", 16, vh - 16 - safe("Bottom"));
     }
     if (badge) {
       const bx = 26, by = 26 + safe("Top");

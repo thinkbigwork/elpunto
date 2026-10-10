@@ -13,7 +13,7 @@
 ## Hoy (prototipo)
 
 - Una sola página web con dibujo en canvas y sonido generado con Web Audio.
-- El progreso se guarda en el navegador al terminar cada nivel; con `?nueva` en la dirección se empieza de cero.
+- El progreso se guarda en el navegador al terminar cada nivel; con `?nueva` en la dirección se empieza de cero, y con `?nivel=2` se empieza en el galpón sin tocar el progreso.
 - Desde el 2 oct 2026 el juego y este libro se publican en Vercel: cada cambio en la rama principal del repositorio sale publicado solo. El juego está en la raíz del sitio y el libro en /libro. Por ahora el sitio lo ven solo colaboradores; antes de abrirlo al público hay que sacar el libro, porque revela soluciones.
 - Desde el 2 oct 2026 el código vive en un repositorio y se trabaja con Claude Code: el juego, este libro en Markdown, los solvers de los cuartos y las pruebas automáticas.
 - Cada mapa de la ciudad se valida con un BFS por etapas (`npm run validar:ciudad`): cada tramo de la progresión se alcanza con lo que el jugador tiene en ese momento, y ninguna casilla queda aislada.
@@ -39,4 +39,4 @@ En prototipo desde el 2 oct 2026, solo para el equipo, en `/editor` del sitio.
 | Medición | Registrar dónde está cada jugador y cuánto tarda |
 
 ---
-_Actualizado: 2026-10-09_
+_Actualizado: 2026-10-10_

@@ -2,6 +2,8 @@
 
 **El nivel 2 del capítulo 1 es un galpón abandonado: mecanismos, ritmo y trampas que te devuelven al inicio, sin quitarte nada.** Al cerrar el resumen del nivel 1, el primer movimiento abre una trampilla bajo tus pies, en la meta de la casa, y se cae al galpón. La trampilla queda a la vista, para volver si el tobogán te manda a la ciudad. Sigue siendo la era 1: oscuridad, blanco y negro.
 
+[Jugar el nivel 2](https://elpunto-mu.vercel.app/?nivel=2): empieza directo en el galpón con el libro y el sombrero, lo que el nivel 1 garantiza. No toca el progreso guardado ni da la insignia.
+
 ## Recorrido
 
 1. **Entrada.** Un cartel avisa de costado ("Lo que suena hueco, cede.") y la primera baldosa floja está en la salida: se cruza una vez; si se vuelve sobre ella, se cae a dos pasos del inicio.

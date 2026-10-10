@@ -137,6 +137,9 @@ const fallas = []; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : ' 
   ok(await p.evaluate(() => __t.cur.name === 'galpon' && __t.powers.has('cuerda')), 'al volver a abrir el juego se empieza en el galpón, con los poderes');
   await p.goto(URL + '?nueva'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => __t.cur.name === 'ciudad'), 'con ?nueva se empieza de cero');
+  await p.goto(URL + '?nivel=2'); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => __t.cur.name === 'galpon' && __t.powers.has('libro') && __t.powers.has('sombrero') && !__t.powers.has('cuerda')), 'con ?nivel=2 se empieza en el galpón, con el libro y el sombrero');
+  ok(await p.evaluate(() => localStorage.getItem('punto.progreso') === ''), 'el atajo no toca el progreso guardado');
 
   ok(errs.length === 0, 'sin errores en la consola' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close();
